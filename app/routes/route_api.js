@@ -10,8 +10,7 @@ module.exports = (app) => {
   //! Api for Movie
   //? ======================================
   // Post Movie
-  app.post("/api/coba", upload.single("img"), movie.coba);
-  // todo: app.post("/api/movie", movie.create);
+  app.post("/api/movie", upload.single("poster"), movie.create);
   // Retrieve all movie
   app.get("/api/movie", movie.findAll);
   // Retrieve a movie

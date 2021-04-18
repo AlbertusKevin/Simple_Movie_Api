@@ -8,15 +8,16 @@ const imageFilter = (req, file, cb) => {
   }
 };
 
-// let storage = multer({
-//   dest: "../../resources/img/movie",
-//   filename: (req, file, cb) => {
-//     cb(null, `${Date.now()}-${file.originalname}`);
-//   },
-// });
+global.__basedir = __dirname;
 
-let uploadFile = multer({
-  dest: "./../../resources/img/movie",
-  fileFilter: imageFilter,
+let storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, path.join(__dirname, "../../resources/img/movie"));
+  },
+  filename: (req, file, cb) => {
+    cb(null, `${Date.now()}-${file.originalname}`);
+  },
 });
+
+let uploadFile = multer({ storage: storage, fileFilter: imageFilter });
 module.exports = uploadFile;

@@ -10,6 +10,48 @@ const Movie = function (movie) {
     (this.year = movie.year);
 };
 
+Movie.create = (movie, result) => {
+  sql.query("INSERT INTO movie SET ?", movie, (err, res) => {
+    if (err) {
+      result(null, res);
+      return;
+    }
+    result(null, res);
+  });
+};
+
+Movie.getLastInserted = (result) => {
+  sql.query(
+    "SELECT movie_id FROM movie ORDER BY movie_id DESC LIMIT 1",
+    (err, res) => {
+      if (err) {
+        result(null, err);
+        return;
+      } else {
+        result(null, res);
+      }
+    }
+  );
+};
+
+Movie.insertCast = (query, data, director, result) => {
+  const movie_id = JSON.parse(JSON.stringify(data))[0].movie_id;
+  const dir = director.split(",");
+  let rows = [];
+
+  dir.forEach((id) => {
+    rows.push([id, movie_id]);
+  });
+
+  sql.query(query, [rows], (err, res) => {
+    if (err) {
+      result(null, err);
+      return;
+    }
+    result(null, res);
+  });
+};
+
 Movie.getAll = (result) => {
   sql.query("SELECT * FROM movie", (err, res) => {
     if (err) {
