@@ -1,4 +1,5 @@
 const User = require("../models/userModel.js");
+const bcrypt = require('bcrypt');
 
 exports.findAll = (req, res) => {
     User.getAll((err, data) => {
@@ -38,6 +39,8 @@ exports.findUser = (req, res) => {
 };
 
 exports.register = (req, res) => {
+
+
     // Validate request
     if (!req.body) {
         res.status(400).send({
@@ -45,12 +48,14 @@ exports.register = (req, res) => {
         });
     }
 
+    const salt = bcrypt.genSaltSync(10);
+
     // Create a User
     const user = new User({
         username: req.body.username,
         email: req.body.email,
         name: req.body.name,
-        password: req.body.password
+        password: bcrypt.hashSync(req.body.password, salt)
     });
 
     // Save Customer in the database
@@ -64,7 +69,7 @@ exports.register = (req, res) => {
             res.status(200).send({
                 status: "Success",
                 message: req.body.username + " Registered Successfully !",
-                newUser: data,
+                data,
             });
 
     });
@@ -129,7 +134,7 @@ exports.updateUser = (req, res) => {
             }
         } else res.status(201).send({
             status: "Success",
-            message: "User " + req.params.username + " Updated Succesfully ! ",
+            message: "User " + req.params.username + " Updated Successfully ! ",
             data
         });
     });

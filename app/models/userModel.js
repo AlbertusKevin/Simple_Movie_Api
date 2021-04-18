@@ -1,4 +1,5 @@
 const sql = require("./../database/db_conn");
+const bcrypt = require('bcrypt');
 
 const User = function (user) {
     (this.username = user.username),
@@ -51,16 +52,19 @@ User.findByUsername = (username, result) => {
 };
 
 User.login = (user, result) => {
-    sql.query(`SELECT COUNT(*) AS 'count' FROM users WHERE username = "` + user.username + `" AND password = "` + user.password + `"`, (err, res) => {
-
+    sql.query(`SELECT password FROM users WHERE username = "${user.username}"`, (err, res) => {
         var queryResult;
         if (err) {
             console.log("error: ", err);
             queryResult = result(err, null);
-
-        } else if (res[0].count == 1) {
-            console.log("Username and Password Are Correct ! ");
-            queryResult = result(null, res[0]);;
+        } else if (res.length) {
+            const checkPassword = bcrypt.compareSync(user.password, res[0].password);
+            if(checkPassword) {
+                console.log("Username and Password Are Correct ! ");
+                queryResult = result(null, res[0]);
+            } else {
+                queryResult = result({ message: "login_failed" }, null);
+            }
         } else {
             queryResult = result({ message: "login_failed" }, null);
         }
@@ -87,6 +91,9 @@ User.insertUser = (newUser, result) => {
 };
 
 User.updateByUsername = (username, user, result) => {
+    const salt = bcrypt.genSaltSync(10);
+    const hashedPassword = bcrypt.hashSync(user.password, salt);
+    user.password = hashedPassword;
     sql.query("UPDATE users SET email = ?, name = ?, password = ? WHERE username = ?", [user.email, user.name, user.password, username], (err, res) => {
 
         var queryResult;
