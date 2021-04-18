@@ -13,14 +13,61 @@ const Movie = function (movie) {
 Movie.getAll = (result) => {
   sql.query("SELECT * FROM movie", (err, res) => {
     if (err) {
-      console.log("error: ", err);
       result(null, err);
       return;
     }
 
-    console.log("Movies: ", res);
     result(null, res);
   });
+};
+
+Movie.findById = (movie_id, result) => {
+  sql.query(`SELECT * FROM movie WHERE movie_id = ${movie_id}`, (err, res) => {
+    if (err) {
+      console.log("error: ", err);
+      result(err, null);
+      return;
+    }
+
+    if (res.length) {
+      console.log("found movie: ", res[0]);
+      result(null, res[0]);
+      return;
+    }
+
+    // not found Customer with the id
+    result({ kind: "not_found" }, null);
+  });
+};
+
+Movie.updateData = (movie_id, movie, result) => {
+  sql.query(
+    "UPDATE movie SET duration = ?, poster = ?, genre = ?, synopsis = ?, title = ?, year = ? WHERE movie_id = ?",
+    [
+      movie.duration,
+      movie.poster,
+      movie.genre,
+      movie.synopsis,
+      movie.title,
+      movie.year,
+      movie_id,
+    ],
+    (err, res) => {
+      if (err) {
+        console.log("error: ", err);
+        result(err, null);
+        return;
+      }
+
+      if (res.affectedRows == 0) {
+        result({ kind: "not_found" }, null);
+        return;
+      }
+
+      console.log("updated movies: ", { movie_id: movie_id, ...movie });
+      result(null, { movie_id: movie_id, ...movie });
+    }
+  );
 };
 
 module.exports = Movie;
