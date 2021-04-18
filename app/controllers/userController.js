@@ -1,5 +1,8 @@
 const User = require("../models/userModel.js");
 const bcrypt = require('bcrypt');
+const jwt = require("jsonwebtoken");
+const config = require("../config/authConfig");
+const authToken  = require("../middleware/authToken");
 
 exports.findAll = (req, res) => {
     User.getAll((err, data) => {
@@ -103,9 +106,13 @@ exports.login = (req, res) => {
                 });
             }
         } else {
+            var token = jwt.sign({ id: user.id }, config.secret, {
+                expiresIn: 86400 // 24 hours
+            });
             res.status(201).send({
                 status: "Success",
                 message: "Login Success !",
+                token: token
             });
         }
     });
