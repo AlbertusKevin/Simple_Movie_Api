@@ -1,5 +1,3 @@
-// const multer = require("multer");
-const fs = require("fs");
 const Movie = require("../models/movie.model.js");
 
 exports.findAll = (req, res) => {
@@ -29,15 +27,49 @@ exports.findOne = (req, res) => {
         res.status(500).send({
           status: "error",
           error: err.message,
-          message: "Error retrieving Customer with id " + req.params.customerId,
+          message: "Error retrieving Movie with id " + req.params.movie_id,
         });
       }
-    } else
-      res.status(200).send({
-        status: "success",
-        message: "A Movie has been retrieved.",
-        movie: data,
+    } else {
+      const data_movie = data;
+      let query =
+        "SELECT cast.name, cast.hometown FROM cast JOIN movie_cast ON movie_cast.actor_id = cast.id WHERE movie_cast.movie_id = ?";
+      Movie.getCast(query, req.params.movie_id, (err, data) => {
+        if (err) {
+          res.status(500).send({
+            status: "error",
+            error: err.message,
+            message:
+              "Error retrieving actors associated with movie with id " +
+              req.params.movie_id,
+          });
+        } else {
+          const data_actor = data;
+          let query =
+            "SELECT cast.name, cast.hometown FROM cast JOIN director ON director.director_id = cast.id WHERE director.movie_id = ?";
+          Movie.getCast(query, req.params.movie_id, (err, data) => {
+            if (err) {
+              res.status(500).send({
+                status: "error",
+                error: err.message,
+                message:
+                  "Error retrieving directors associated with movie with id " +
+                  req.params.movie_id,
+              });
+            } else {
+              const data_director = [data];
+              res.status(200).send({
+                status: "success",
+                message: "A Movie has been retrieved.",
+                movie: data_movie,
+                actors: data_actor,
+                director: data_director,
+              });
+            }
+          });
+        }
       });
+    }
   });
 };
 
@@ -49,7 +81,15 @@ exports.update = (req, res) => {
     });
   }
 
-  Movie.updateData(req.params.movie_id, new Movie(req.body), (err, data) => {
+  const movie = {
+    duration: req.body.duration,
+    genre: req.body.genre,
+    synopsis: req.body.synopsis,
+    title: req.body.title,
+    year: req.body.year,
+  };
+
+  Movie.updateData(req.params.movie_id, movie, (err, data) => {
     if (err) {
       if (err.kind === "not_found") {
         res.status(404).send({
@@ -68,6 +108,39 @@ exports.update = (req, res) => {
         status: "success",
         message: "A Movie has been updated.",
         movie: data,
+      });
+    }
+  });
+};
+
+exports.updatePoster = (req, res) => {
+  // Upload file
+  if (req.file == undefined) {
+    return res.status(400).send(`You must select a file.`);
+  }
+
+  const file = req.file.path;
+
+  if (!file) {
+    res.status(400).send({
+      status: false,
+      data: "No File is selected.",
+    });
+  }
+
+  // ambil nama file
+  const img = req.file.filename;
+
+  Movie.updatePoster(req.params.movie_id, img, (err, data) => {
+    if (err) {
+      res.status(500).send({
+        status: "Failed",
+        message: `${err.message}. Some error occured while trying update poster movie id ${req.params.id}`,
+      });
+    } else {
+      res.status(200).send({
+        status: "success",
+        message: `Poster movie with id ${req.params.movie_id} successfully updated.`,
       });
     }
   });

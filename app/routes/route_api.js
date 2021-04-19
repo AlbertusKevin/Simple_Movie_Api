@@ -17,6 +17,13 @@ module.exports = (app) => {
   app.get("/api/movie/:movie_id", movie.findOne);
   // Update data movie
   app.put("/api/movie/:movie_id", movie.update);
+  // Update poster movie
+  app.put(
+    "/api/movie/poster/:movie_id",
+    upload.single("poster"),
+    movie.updatePoster
+  );
+
   //? ======================================
   //! Api for Genre
   //? ======================================
