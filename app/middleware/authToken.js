@@ -2,12 +2,14 @@ const jwt = require("jsonwebtoken");
 const config = require("../config/authConfig.js");
 
 verifyToken = (req, res, next) => {
-    let token = req.headers["x-access-token"];
+    let authHeader = req.headers["authorization"];
+    const token = authHeader && authHeader.split(' ')[1];
 
     if (!token) {
         console.log('No Token');
         return res.status(403).send({
-            message: "No token provided!"
+            status: "Failed",
+            message: "No Token Provided!"
         });
     }
 
@@ -15,11 +17,10 @@ verifyToken = (req, res, next) => {
         if (err) {
             console.log('Unauthorized');
             return res.status(401).send({
+                status: "Failed",
                 message: "Unauthorized!"
             });
         }
-        else
-            console.log('Token exists');
 
         req.username = decoded.username;
         next();

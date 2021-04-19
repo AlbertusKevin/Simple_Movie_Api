@@ -5,14 +5,14 @@ module.exports = (app) => {
     app.use(function(req, res, next) {
         res.header(
             "Access-Control-Allow-Headers",
-            "x-access-token, Origin, Content-Type, Accept"
+            "Authorization, Origin, Content-Type, Accept"
         );
         next();
     });
 
     // User API
-    app.get("/api/users", user.findAll, [authToken.verifyToken]);
-    app.get("/api/user/:username", user.findUser, [authToken.verifyToken]);
+    app.get("/api/users", [authToken.verifyToken], user.findAll);
+    app.get("/api/user/:username", [authToken.verifyToken], user.findUser);
     app.post("/api/login", user.login);
     app.post("/api/register", user.register);
     app.put("/api/user/update/:username", user.updateUser);
