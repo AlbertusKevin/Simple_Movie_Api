@@ -5,7 +5,8 @@ module.exports = (app) => {
   const comment = require("../controllers/comment.controller.js");
   const rating = require("../controllers/rating.controller.js");
   const watched = require("../controllers/watched.controller.js");
-
+  const watchlist = require("../controllers/watchlist.controller.js");
+  
   //? ======================================
   //! Api for Movie
   //? ======================================
@@ -55,4 +56,14 @@ module.exports = (app) => {
   app.post("/api/watched/:username/:movie_id", watched.addToList);
   // Menghapus Movie dari daftar watched
   app.delete("/api/watched/:username/:movie_id", watched.deleteFromList);
+
+    //? ======================================
+  //! Api for Watchlist
+  //? ======================================
+  // Melihat daftar watchlist
+  app.get("/api/watchlist/:username", watchlist.getAUserList);
+  // Menambahkan Movie ke daftar Watchlist
+  app.post("/api/watchlist/:username/:movie_id", watchlist.addToList);
+  // Menghapus Movie dari daftar watchlist
+  app.delete("/api/watchlist/:username/:movie_id", watchlist.deleteFromList);
 };
