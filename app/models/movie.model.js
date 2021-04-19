@@ -82,12 +82,22 @@ Movie.findById = (movie_id, result) => {
   });
 };
 
+Movie.getCast = (query, movie_id, result) => {
+  sql.query(query, movie_id, (err, res) => {
+    if (err) {
+      result(null, err);
+      return;
+    } else {
+      result(null, res);
+    }
+  });
+};
+
 Movie.updateData = (movie_id, movie, result) => {
   sql.query(
-    "UPDATE movie SET duration = ?, poster = ?, genre = ?, synopsis = ?, title = ?, year = ? WHERE movie_id = ?",
+    "UPDATE movie SET duration = ?, genre = ?, synopsis = ?, title = ?, year = ? WHERE movie_id = ?",
     [
       movie.duration,
-      movie.poster,
       movie.genre,
       movie.synopsis,
       movie.title,
@@ -108,6 +118,21 @@ Movie.updateData = (movie_id, movie, result) => {
 
       console.log("updated movies: ", { movie_id: movie_id, ...movie });
       result(null, { movie_id: movie_id, ...movie });
+    }
+  );
+};
+
+Movie.updatePoster = (movie_id, filename, result) => {
+  sql.query(
+    "UPDATE movie SET poster = ? WHERE movie_id = ?",
+    [filename, movie_id],
+    (err, res) => {
+      if (err) {
+        console.log(err);
+        result(null, err);
+        return;
+      }
+      result(null, res);
     }
   );
 };
