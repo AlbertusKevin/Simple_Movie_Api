@@ -5,7 +5,7 @@ module.exports = (app) => {
     app.use(function(req, res, next) {
         res.header(
             "Access-Control-Allow-Headers",
-            "Authorization, Origin, Content-Type, Accept"
+            "Authorization, x-access-token, Origin, Content-Type, Accept"
         );
         next();
     });
@@ -15,5 +15,6 @@ module.exports = (app) => {
     app.get("/api/user/:username", [authToken.verifyToken], user.findUser);
     app.post("/api/login", user.login);
     app.post("/api/register", user.register);
-    app.put("/api/user/update/:username", user.updateUser);
+    app.put("/api/user/update/:username", [authToken.verifyToken], user.updateUser);
+    app.get("/api/areyoulogin/:username", user.authorizeToken)
 };

@@ -5,7 +5,7 @@ const User = function (user) {
     (this.username = user.username),
         (this.email = user.email),
         (this.name = user.name),
-        (this.password = user.password);
+        (this.password = user.password)
 };
 
 User.getAll = (result) => {
@@ -39,7 +39,6 @@ User.findByUsername = (username, result) => {
         } else if (res.length) {
             console.log("found user: ", res[0]);
             queryResult = result(null, res[0]);
-            return;
         } else {
             // not found Customer with the username
             queryResult = result({ message: "not_found" }, null);
@@ -52,7 +51,8 @@ User.findByUsername = (username, result) => {
 };
 
 User.login = (user, result) => {
-    sql.query(`SELECT password FROM users WHERE username = "${user.username}"`, (err, res) => {
+    const username = user.username;
+    sql.query(`SELECT password, token FROM users WHERE username = "${username}"`, (err, res) => {
         var queryResult;
         if (err) {
             console.log("error: ", err);
@@ -100,7 +100,6 @@ User.updateByUsername = (username, user, result) => {
         if (err) {
             console.log("error: ", err);
             queryResult = result(null, err);
-            return;
         } else if (result.affectedRows > 0) {
             queryResult = result({kind: "not_found"}, null);
         } else {
@@ -109,6 +108,41 @@ User.updateByUsername = (username, user, result) => {
         }
 
         return queryResult;
+    });
+};
+
+User.insertToken = (username, token, result) => {
+
+    sql.query(`UPDATE users SET token = "${token}" WHERE username ="${username}"`, (err, res) => {
+
+        if (err) {
+            console.log("error: ", err);
+            return result(err, null);
+
+        }
+
+        console.log("Token Inserted to Database");
+        return;
+
+    });
+};
+
+User.getToken = (username, result) => {
+    sql.query(`SELECT token FROM users WHERE username ="${username}"`, (err, res) => {
+        var queryResult;
+        if (err) {
+            console.log("error: ", err);
+            queryResult = result(err, null);
+        } else if (res.length) {
+            console.log("found user: ", res[0]);
+            queryResult = result(null, res[0]);
+        } else {
+            // not found Customer with the username
+            queryResult = result({ message: "not_found" }, null);
+        }
+
+        return queryResult;
+
     });
 };
 

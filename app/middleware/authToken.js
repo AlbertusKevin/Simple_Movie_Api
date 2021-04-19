@@ -2,8 +2,11 @@ const jwt = require("jsonwebtoken");
 const config = require("../config/authConfig.js");
 
 verifyToken = (req, res, next) => {
-    let authHeader = req.headers["authorization"];
-    const token = authHeader && authHeader.split(' ')[1];
+    let token = req.headers["authorization"] || req.headers["x-access-token"] || '';
+    if (token.startsWith("Bearer ")) {
+        // Remove Bearer from string
+        token = token.slice(7, token.length);
+    }
 
     if (!token) {
         console.log('No Token');
