@@ -13,7 +13,7 @@ const Movie = function (movie) {
 Movie.create = (movie, result) => {
   sql.query("INSERT INTO movie SET ?", movie, (err, res) => {
     if (err) {
-      result(null, res);
+      result(null, err);
       return;
     }
     result(null, res);

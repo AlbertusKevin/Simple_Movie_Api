@@ -1,17 +1,19 @@
 module.exports = (app) => {
-  const upload = require("../middleware/upload");
+  const uploadPoster = require("../middleware/uploadPoster");
+  const uploadPhoto = require("../middleware/uploadPhoto");
   const movie = require("../controllers/movie.controller.js");
   const genre = require("../controllers/genre.controller.js");
   const comment = require("../controllers/comment.controller.js");
   const rating = require("../controllers/rating.controller.js");
   const watched = require("../controllers/watched.controller.js");
   const watchlist = require("../controllers/watchlist.controller.js");
-  
+  const cast = require("../controllers/cast.controller.js");
+
   //? ======================================
   //! Api for Movie
   //? ======================================
   // Post Movie
-  app.post("/api/movie", upload.single("poster"), movie.create);
+  app.post("/api/movie", uploadPoster.single("poster"), movie.create);
   // Retrieve all movie
   app.get("/api/movie", movie.findAll);
   // Retrieve a movie
@@ -21,7 +23,7 @@ module.exports = (app) => {
   // Update poster movie
   app.put(
     "/api/movie/poster/:movie_id",
-    upload.single("poster"),
+    uploadPoster.single("poster"),
     movie.updatePoster
   );
 
@@ -57,7 +59,7 @@ module.exports = (app) => {
   // Menghapus Movie dari daftar watched
   app.delete("/api/watched/:username/:movie_id", watched.deleteFromList);
 
-    //? ======================================
+  //? ======================================
   //! Api for Watchlist
   //? ======================================
   // Melihat daftar watchlist
@@ -66,4 +68,12 @@ module.exports = (app) => {
   app.post("/api/watchlist/:username/:movie_id", watchlist.addToList);
   // Menghapus Movie dari daftar watchlist
   app.delete("/api/watchlist/:username/:movie_id", watchlist.deleteFromList);
+
+  //? ======================================
+  //! Api for Cast
+  //? ======================================
+  app.post("/api/cast", uploadPhoto.single("photo"), cast.insertCast);
+  app.get("/api/cast", cast.getAllCast);
+  app.get("/api/cast/:id", cast.getCastDetail);
+  app.put("/api/cast/:id", uploadPhoto.single("photo"), cast.updateData);
 };

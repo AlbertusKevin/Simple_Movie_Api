@@ -1,5 +1,6 @@
 const multer = require("multer");
 const path = require("path");
+
 const imageFilter = (req, file, cb) => {
   if (file.mimetype.startsWith("image")) {
     cb(null, true);
@@ -10,9 +11,9 @@ const imageFilter = (req, file, cb) => {
 
 global.__basedir = __dirname;
 
-let storage = multer.diskStorage({
+const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, path.join(__dirname, "../../resources/img/movie"));
+    cb(null, path.join(__dirname, "../../resources/img/cast"));
   },
   filename: (req, file, cb) => {
     cb(null, `${Date.now()}-${file.originalname}`);
