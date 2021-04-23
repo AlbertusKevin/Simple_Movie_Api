@@ -1,5 +1,6 @@
 const jwt = require("jsonwebtoken");
 const config = require("../config/authConfig.js");
+const User = require("../models/userModel.js");
 
 verifyToken = (req, res, next) => {
     let token = req.headers["authorization"] || req.headers["x-access-token"] || '';
@@ -30,7 +31,43 @@ verifyToken = (req, res, next) => {
     });
 };
 
+// function getTokenFromDatabase(username, callback)
+// {
+//     User.getToken(username, function(err, data) {
+//         if (err)
+//             return callback(err,null);
+//         else
+//             return callback(null, data.token);
+//
+//     });
+//
+// }
+
+function authorizeToken(username, callback) {
+    User.getToken(username, (err, data) => {
+        if (err) {
+            console.log("error: ", err);
+            return callback({message: "not_found"}, null);
+        } else {
+            let valid = false;
+            if(data.token != null) {
+                try {
+                    jwt.verify(data.token, config.secret);
+                    valid = true;
+                    console.log('Token valid !');
+                } catch (err) {
+                    console.log('Token expired or null!');
+                }
+
+            }
+            return callback(null, {valid: valid});
+        }
+    });
+}
+
 const authToken = {
     verifyToken: verifyToken,
+    authorizeToken: authorizeToken
 };
+
 module.exports = authToken;

@@ -101,7 +101,7 @@ User.updateByUsername = (username, user, result) => {
             console.log("error: ", err);
             queryResult = result(null, err);
         } else if (result.affectedRows > 0) {
-            queryResult = result({kind: "not_found"}, null);
+            queryResult = result({message: "not_found"}, null);
         } else {
             console.log("updated user: ", {username: username, ...user});
             queryResult = result(null, {username: username, ...user});
@@ -118,11 +118,9 @@ User.insertToken = (username, token, result) => {
         if (err) {
             console.log("error: ", err);
             return result(err, null);
-
         }
 
         console.log("Token Inserted to Database");
-        return;
 
     });
 };
@@ -137,7 +135,7 @@ User.getToken = (username, result) => {
             console.log("found user: ", res[0]);
             queryResult = result(null, res[0]);
         } else {
-            // not found Customer with the username
+            // not found the username in databse
             queryResult = result({ message: "not_found" }, null);
         }
 
