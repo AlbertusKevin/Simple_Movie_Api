@@ -1,74 +1,133 @@
 const Watched = require("../models/watched.model.js");
+const authToken = require("../middleware/authToken");
 
 exports.getAUserList = (req, res) => {
-  Watched.getAUserList(req.params.username, (err, data) => {
-    if (err)
-      res.status(500).send({
-        message:
-          err.message ||
-          "Some error occurred while retrieving " +
-            req.params.username +
-            " watched list ",
+  const username = req.params.username.toLowerCase();
+  authToken.authorizeToken(username, function (err, data) {
+    if (err) {
+      if (err.message === "not_found")
+        return res.status(404).send({
+          message: `Not found User with username ${username}.`,
+        });
+      else
+        return res.status(500).send({
+          status: "Failed",
+          error: err.message || "Error retrieving token with from database",
+        });
+    } else if (!data.valid) {
+      return res
+        .status(403)
+        .send({ status: "Forbidden Access", message: "must login first" });
+    } else {
+      Watched.getAUserList(req.params.username, (err, data) => {
+        if (err)
+          res.status(500).send({
+            message:
+              err.message ||
+              "Some error occurred while retrieving " +
+                req.params.username +
+                " watched list ",
+          });
+        else
+          res.status(200).send({
+            status: "Success",
+            message:
+              req.params.username + "'s watched List has been retrieved.",
+            watched_list: data,
+          });
       });
-    else
-      res.status(200).send({
-        status: "Success",
-        message: req.params.username + "'s watched List has been retrieved.",
-        watched_list: data,
-      });
+    }
   });
 };
 
 exports.addToList = (req, res) => {
-  const watched = new Watched({
-    username: req.params.username,
-    movie_id: req.params.movie_id,
-  });
+  const username = req.params.username.toLowerCase();
+  authToken.authorizeToken(username, function (err, data) {
+    if (err) {
+      if (err.message === "not_found")
+        return res.status(404).send({
+          message: `Not found User with username ${username}.`,
+        });
+      else
+        return res.status(500).send({
+          status: "Failed",
+          error: err.message || "Error retrieving token with from database",
+        });
+    } else if (!data.valid) {
+      return res
+        .status(403)
+        .send({ status: "Forbidden Access", message: "must login first" });
+    } else {
+      const watched = new Watched({
+        username: req.params.username,
+        movie_id: req.params.movie_id,
+      });
 
-  Watched.addToList(watched, (err, data) => {
-    if (err)
-      res.status(500).send({
-        message:
-          err.message ||
-          "Some error occurred while add a movie with " +
-            req.params.movie_id +
-            " to " +
-            req.params.vin +
-            "'s watched list ",
+      Watched.addToList(watched, (err, data) => {
+        if (err)
+          res.status(500).send({
+            message:
+              err.message ||
+              "Some error occurred while add a movie with " +
+                req.params.movie_id +
+                " to " +
+                req.params.vin +
+                "'s watched list ",
+          });
+        else
+          res.status(200).send({
+            status: "Success",
+            message:
+              req.params.username +
+              "'s watched List has been added a new movie (id: " +
+              req.params.movie_id +
+              " ).",
+          });
       });
-    else
-      res.status(200).send({
-        status: "Success",
-        message:
-          req.params.username +
-          "'s watched List has been added a new movie (id: " +
-          req.params.movie_id +
-          " ).",
-      });
+    }
   });
 };
 
 exports.deleteFromList = (req, res) => {
-  const watched = new Watched({
-    username: req.params.username,
-    movie_id: req.params.movie_id,
-  });
+  const username = req.params.username.toLowerCase();
+  authToken.authorizeToken(username, function (err, data) {
+    if (err) {
+      if (err.message === "not_found")
+        return res.status(404).send({
+          message: `Not found User with username ${username}.`,
+        });
+      else
+        return res.status(500).send({
+          status: "Failed",
+          error: err.message || "Error retrieving token with from database",
+        });
+    } else if (!data.valid) {
+      return res
+        .status(403)
+        .send({ status: "Forbidden Access", message: "must login first" });
+    } else {
+      const watched = new Watched({
+        username: req.params.username,
+        movie_id: req.params.movie_id,
+      });
 
-  Watched.deleteFromList(watched, (err, data) => {
-    if (err)
-      res.status(500).send({
-        message:
-          err.message ||
-          "Some error occurred while deleting a movie with " +
-            req.params.movie_id +
-            " from " +
-            req.params.vin +
-            "'s watched list ",
+      Watched.deleteFromList(watched, (err, data) => {
+        if (err)
+          res.status(500).send({
+            message:
+              err.message ||
+              "Some error occurred while deleting a movie with " +
+                req.params.movie_id +
+                " from " +
+                req.params.vin +
+                "'s watched list ",
+          });
+        else
+          res.status(200).send({
+            status: "Success",
+            message: `Movie with id: ${req.params.movie_id} has been deleted from ${req.params.username}'s watched List.`,
+          });
       });
-    else
-      res.status(200).send({
-        status: "Success",
-        message: `Movie with id: ${req.params.movie_id} has been deleted from ${req.params.username}'s watched List.`,
-      });
+    }
   });
 };

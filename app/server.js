@@ -13,9 +13,7 @@ app.get("/api", (req, res) => {
 });
 
 require("./routes/route_api")(app);
-require("./routes/userRoute")(app);
 // set port, listen for requests
 app.listen(port, () => {
   console.log("Server is running on port " + port);
-
 });
