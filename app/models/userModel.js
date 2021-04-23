@@ -1,10 +1,11 @@
 const sql = require("./../database/db_conn");
+const bcrypt = require('bcrypt');
 
 const User = function (user) {
     (this.username = user.username),
         (this.email = user.email),
         (this.name = user.name),
-        (this.password = user.password);
+        (this.password = user.password)
 };
 
 User.getAll = (result) => {
@@ -38,7 +39,6 @@ User.findByUsername = (username, result) => {
         } else if (res.length) {
             console.log("found user: ", res[0]);
             queryResult = result(null, res[0]);
-            return;
         } else {
             // not found Customer with the username
             queryResult = result({ message: "not_found" }, null);
@@ -51,16 +51,20 @@ User.findByUsername = (username, result) => {
 };
 
 User.login = (user, result) => {
-    sql.query(`SELECT COUNT(*) AS 'count' FROM users WHERE username = "` + user.username + `" AND password = "` + user.password + `"`, (err, res) => {
-
+    const username = user.username;
+    sql.query(`SELECT password, token FROM users WHERE username = "${username}"`, (err, res) => {
         var queryResult;
         if (err) {
             console.log("error: ", err);
             queryResult = result(err, null);
-
-        } else if (res[0].count == 1) {
-            console.log("Username and Password Are Correct ! ");
-            queryResult = result(null, res[0]);;
+        } else if (res.length) {
+            const checkPassword = bcrypt.compareSync(user.password, res[0].password);
+            if(checkPassword) {
+                console.log("Username and Password Are Correct ! ");
+                queryResult = result(null, res[0]);
+            } else {
+                queryResult = result({ message: "login_failed" }, null);
+            }
         } else {
             queryResult = result({ message: "login_failed" }, null);
         }
@@ -87,21 +91,56 @@ User.insertUser = (newUser, result) => {
 };
 
 User.updateByUsername = (username, user, result) => {
+    const salt = bcrypt.genSaltSync(10);
+    const hashedPassword = bcrypt.hashSync(user.password, salt);
+    user.password = hashedPassword;
     sql.query("UPDATE users SET email = ?, name = ?, password = ? WHERE username = ?", [user.email, user.name, user.password, username], (err, res) => {
 
         var queryResult;
         if (err) {
             console.log("error: ", err);
             queryResult = result(null, err);
-            return;
         } else if (result.affectedRows > 0) {
-            queryResult = result({kind: "not_found"}, null);
+            queryResult = result({message: "not_found"}, null);
         } else {
             console.log("updated user: ", {username: username, ...user});
             queryResult = result(null, {username: username, ...user});
         }
 
         return queryResult;
+    });
+};
+
+User.insertToken = (username, token, result) => {
+
+    sql.query(`UPDATE users SET token = "${token}" WHERE username ="${username}"`, (err, res) => {
+
+        if (err) {
+            console.log("error: ", err);
+            return result(err, null);
+        }
+
+        console.log("Token Inserted to Database");
+
+    });
+};
+
+User.getToken = (username, result) => {
+    sql.query(`SELECT token FROM users WHERE username ="${username}"`, (err, res) => {
+        var queryResult;
+        if (err) {
+            console.log("error: ", err);
+            queryResult = result(err, null);
+        } else if (res.length) {
+            console.log("found user: ", res[0]);
+            queryResult = result(null, res[0]);
+        } else {
+            // not found the username in databse
+            queryResult = result({ message: "not_found" }, null);
+        }
+
+        return queryResult;
+
     });
 };
 
