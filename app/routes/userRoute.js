@@ -13,6 +13,7 @@ module.exports = (app) => {
     app.get("/api/user/:username", user.findUser);
     app.post("/api/login", user.login);
     app.post("/api/register", user.register);
-    app.put("/api/user/update/:username", user.updateUser);
+    app.post("/api/logout", user.logout);
+    app.put("/api/user/update", user.updateUser);
     app.get("/api/areyoulogin/:username", user.checkToken)
 };

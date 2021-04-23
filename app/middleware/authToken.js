@@ -31,18 +31,6 @@ verifyToken = (req, res, next) => {
     });
 };
 
-// function getTokenFromDatabase(username, callback)
-// {
-//     User.getToken(username, function(err, data) {
-//         if (err)
-//             return callback(err,null);
-//         else
-//             return callback(null, data.token);
-//
-//     });
-//
-// }
-
 function authorizeToken(username, callback) {
     User.getToken(username, (err, data) => {
         if (err) {
