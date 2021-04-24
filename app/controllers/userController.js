@@ -21,9 +21,8 @@ exports.findAll = (req, res) => {
 };
 
 exports.findUser = (req, res) => {
-  const username = req.params.username.toLowerCase();
-  authToken.authorizeToken(username, function (err, data) {
-    if (err)
+  User.getUsername(req.params.token, (err, data) => {
+    if (err) {
       if (err.message === "not_found")
         return res.status(404).send({
           message: `Not found User with username ${username}.`,
@@ -33,34 +32,48 @@ exports.findUser = (req, res) => {
           status: "Failed",
           error: err.message || "Error retrieving token with from database",
         });
-    else if (data.valid) {
-      User.findByUsername(username, (err, data) => {
-        if (err) {
-          if (err.message === "not_found") {
-            res.status(404).send({
-              message: `Not found User with username ${req.params.username}.`,
+    } else {
+      const username = JSON.parse(
+        JSON.stringify(data)
+      )[0].username.toLowerCase();
+      authToken.authorizeToken(username, function (err, data) {
+        if (err)
+          if (err.message === "not_found")
+            return res.status(404).send({
+              message: `Not found User with username ${username}.`,
             });
-          } else {
-            res.status(500).send({
-              message:
-                "Error retrieving User with username " + req.params.username,
+          else
+            return res.status(500).send({
+              status: "Failed",
+              error: err.message || "Error retrieving token with from database",
             });
-          }
+        else if (data.valid) {
+          User.findByUsername(username, (err, data) => {
+            if (err) {
+              if (err.message === "not_found") {
+                res.status(404).send({
+                  message: `Not found User with username ${username}.`,
+                });
+              } else {
+                res.status(500).send({
+                  message: "Error retrieving User with username " + username,
+                });
+              }
+            } else {
+              res.status(201).send({
+                status: "Success",
+                message:
+                  "User with username " + username + " has been retrieved.",
+                user: data,
+              });
+            }
+          });
         } else {
-          res.status(201).send({
-            status: "Success",
-            message:
-              "User with username " +
-              req.params.username +
-              " has been retrieved.",
-            user: data,
+          return res.status(401).send({
+            status: "Failed",
+            message: "Token expired or null. Please login !",
           });
         }
-      });
-    } else {
-      return res.status(401).send({
-        status: "Failed",
-        message: "Token expired or null. Please login !",
       });
     }
   });
@@ -188,60 +201,79 @@ exports.login = (req, res) => {
 };
 
 exports.updateUser = (req, res) => {
-  const username = req.params.username.toLowerCase();
-  authToken.authorizeToken(username, function (err, data) {
-    if (err)
+  User.getUsername(req.params.token, (err, data) => {
+    if (err) {
       if (err.message === "not_found")
         return res.status(404).send({
-          message: `Not found User with username ${req.params.username}.`,
+          message: `Not found User with username ${username}.`,
         });
       else
-        res.status(500).send({
+        return res.status(500).send({
           status: "Failed",
           error: err.message || "Error retrieving token with from database",
         });
-    else if (data.valid) {
-      const v = new Validator(req.body, {
-        email: "required|email",
-        name: "required",
-        password: "required|minLength:6",
-      });
+    } else {
+      const username = JSON.parse(
+        JSON.stringify(data)
+      )[0].username.toLowerCase();
+      authToken.authorizeToken(username, function (err, data) {
+        if (err)
+          if (err.message === "not_found")
+            return res.status(404).send({
+              message: `Not found User with username ${username}.`,
+            });
+          else
+            res.status(500).send({
+              status: "Failed",
+              error: err.message || "Error retrieving token with from database",
+            });
+        else if (data.valid) {
+          const v = new Validator(req.body, {
+            email: "required|email",
+            name: "required",
+            password: "required|minLength:6",
+          });
 
-      v.check().then((matched) => {
-        if (!matched) {
-          console.log(v.errors);
-          return res.status(422).send({
-            status: "Failed",
-            error: v.errors,
+          v.check().then((matched) => {
+            if (!matched) {
+              console.log(v.errors);
+              return res.status(422).send({
+                status: "Failed",
+                error: v.errors,
+              });
+            } else {
+              User.updateByUsername(
+                username,
+                new User(req.body),
+                (err, data) => {
+                  if (err) {
+                    if (err.message === "not_found") {
+                      res.status(404).send({
+                        status: "Failed",
+                        message: `Not found User with username ${username}.`,
+                      });
+                    } else {
+                      res.status(500).send({
+                        status: "Failed",
+                        message: "Error updating User with with " + username,
+                      });
+                    }
+                  } else
+                    res.status(201).send({
+                      status: "Success",
+                      message: "User " + username + " Updated Successfully ! ",
+                      data,
+                    });
+                }
+              );
+            }
           });
         } else {
-          const username = req.params.username.toLowerCase();
-          User.updateByUsername(username, new User(req.body), (err, data) => {
-            if (err) {
-              if (err.message === "not_found") {
-                res.status(404).send({
-                  status: "Failed",
-                  message: `Not found User with username ${username}.`,
-                });
-              } else {
-                res.status(500).send({
-                  status: "Failed",
-                  message: "Error updating User with with " + username,
-                });
-              }
-            } else
-              res.status(201).send({
-                status: "Success",
-                message: "User " + username + " Updated Successfully ! ",
-                data,
-              });
+          res.status(401).send({
+            status: "Failed",
+            error: `Token expired, you need to login !`,
           });
         }
-      });
-    } else {
-      res.status(401).send({
-        status: "Failed",
-        error: `Token expired, you need to login !`,
       });
     }
   });

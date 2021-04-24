@@ -8,6 +8,25 @@ const User = function (user) {
     (this.password = user.password);
 };
 
+User.getUsername = (token, result) => {
+  sql.query(
+    `SELECT username FROM users WHERE token = "${token}"`,
+    (err, res) => {
+      var queryResult;
+      if (err) {
+        queryResult = result(null, err);
+      } else if (res.length) {
+        queryResult = result(null, res);
+      } else {
+        res.push("There is no record in database.");
+        queryResult = result(null, res);
+      }
+
+      return queryResult;
+    }
+  );
+};
+
 User.getAll = (result) => {
   sql.query("SELECT * FROM users", (err, res) => {
     var queryResult;
