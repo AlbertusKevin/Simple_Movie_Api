@@ -19,11 +19,11 @@ exports.findAll = (req, res) => {
 };
 
 exports.create = (req, res) => {
-  User.getUsername(req.params.token, (err, data) => {
+  User.getUsername(req.body.token, (err, data) => {
     if (err) {
       if (err.message === "not_found")
         return res.status(404).send({
-          message: `Not found User with username ${username}.`,
+          message: `Not found username with specified token.`,
         });
       else
         return res.status(500).send({
@@ -34,7 +34,7 @@ exports.create = (req, res) => {
       const username = JSON.parse(
         JSON.stringify(data)
       )[0].username.toLowerCase();
-      if (username === "admin") {
+      if (username === "admin1") {
         authToken.authorizeToken(username, function (err, data) {
           if (err) {
             if (err.message === "not_found")
@@ -72,7 +72,8 @@ exports.create = (req, res) => {
                     err.message ||
                     "Some error occurred while creating the genre.",
                 });
-              else res.send(data);
+              else
+                res.status(201).send({ message: "genre created", genre: data });
             });
           }
         });

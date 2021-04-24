@@ -91,7 +91,7 @@ exports.update = (req, res) => {
       const username = JSON.parse(
         JSON.stringify(data)
       )[0].username.toLowerCase();
-      if (username === "admin") {
+      if (username === "admin1") {
         authToken.authorizeToken(username, function (err, data) {
           if (err) {
             if (err.message === "not_found")
@@ -295,7 +295,7 @@ exports.create = (req, res) => {
       const username = JSON.parse(
         JSON.stringify(data)
       )[0].username.toLowerCase();
-      if (username === "admin") {
+      if (username === "admin1") {
         authToken.authorizeToken(username, function (err, data) {
           if (err) {
             if (err.message === "not_found")

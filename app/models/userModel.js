@@ -28,7 +28,7 @@ User.getUsername = (token, result) => {
 };
 
 User.getAll = (result) => {
-  sql.query("SELECT * FROM users", (err, res) => {
+  sql.query("SELECT username, email FROM users", (err, res) => {
     var queryResult;
     if (err) {
       console.log("error: ", err);
@@ -48,7 +48,7 @@ User.getAll = (result) => {
 
 User.findByUsername = (username, result) => {
   sql.query(
-    `SELECT name, username, email FROM users WHERE username = "${username}"`,
+    `SELECT * FROM users WHERE username = "${username}"`,
     (err, res) => {
       var queryResult;
       if (err) {
@@ -58,7 +58,6 @@ User.findByUsername = (username, result) => {
         console.log("found user: ", res[0]);
         queryResult = result(null, res[0]);
       } else {
-        // not found Customer with the username
         queryResult = result({ message: "not_found" }, null);
       }
 
@@ -159,7 +158,6 @@ User.getToken = (username, result) => {
         console.log("found user: ", res[0]);
         queryResult = result(null, res[0]);
       } else {
-        // not found the username in databse
         queryResult = result({ message: "not_found" }, null);
       }
 
@@ -168,7 +166,7 @@ User.getToken = (username, result) => {
   );
 };
 
-User.nullToken = (username, token, result) => {
+User.nullToken = (username, result) => {
   sql.query(
     `UPDATE users SET token = NULL WHERE username ="${username}"`,
     (err) => {

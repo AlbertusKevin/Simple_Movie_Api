@@ -8,11 +8,11 @@ const authToken = require("../middleware/authToken");
 exports.findAll = (req, res) => {
   User.getAll((err, data) => {
     if (err)
-      res.status(400).send({
+      res.status(500).send({
         message: err.message || "Some error occurred while retrieving users.",
       });
     else
-      res.status(201).send({
+      res.status(200).send({
         status: "Success",
         message: "List of Users has been retrieved.",
         user: data,
@@ -25,7 +25,7 @@ exports.findUser = (req, res) => {
     if (err) {
       if (err.message === "not_found")
         return res.status(404).send({
-          message: `Not found User with username ${username}.`,
+          message: `Not found username with specified token.`,
         });
       else
         return res.status(500).send({
@@ -60,7 +60,7 @@ exports.findUser = (req, res) => {
                 });
               }
             } else {
-              res.status(201).send({
+              res.status(200).send({
                 status: "Success",
                 message:
                   "User with username " + username + " has been retrieved.",
@@ -89,7 +89,6 @@ exports.register = (req, res) => {
 
   v.check().then((matched) => {
     if (!matched) {
-      console.log(v.errors);
       return res.status(422).send({
         status: "Failed",
         error: v.errors,
@@ -120,7 +119,7 @@ exports.register = (req, res) => {
                 err.message || "Some error occurred while creating the user.",
             });
         else
-          res.status(200).send({
+          res.status(201).send({
             status: "Success",
             message: username + " Registered Successfully !",
             data,
@@ -217,7 +216,7 @@ exports.login = (req, res) => {
                     token: token,
                   });
                 } else {
-                  res.status(201).send({
+                  res.status(204).send({
                     status: "Success",
                     message: "Login Success !",
                     token: data.token,
@@ -233,11 +232,11 @@ exports.login = (req, res) => {
 };
 
 exports.updateUser = (req, res) => {
-  User.getUsername(req.params.token, (err, data) => {
+  User.getUsername(req.body.token, (err, data) => {
     if (err) {
       if (err.message === "not_found")
         return res.status(404).send({
-          message: `Not found User with username ${username}.`,
+          message: `Not found username with specified token.`,
         });
       else
         return res.status(500).send({
@@ -261,9 +260,8 @@ exports.updateUser = (req, res) => {
             });
         else if (data.valid) {
           const v = new Validator(req.body, {
-            email: "required|email",
-            name: "required",
-            password: "required|minLength:6",
+            email: "email",
+            password: "minLength:6",
           });
           v.check().then((matched) => {
             if (!matched) {
@@ -345,7 +343,7 @@ exports.checkToken = (req, res) => {
           error: err.message || "Error retrieving token from database",
         });
     else if (data.valid)
-      return res.status(200).send({
+      return res.status(204).send({
         status: "Success",
         message: "Token is still valid!",
       });
@@ -358,35 +356,51 @@ exports.checkToken = (req, res) => {
 };
 
 exports.logout = (req, res) => {
-  const username = req.body.username.toLowerCase();
-
-  authToken.authorizeToken(username, function (err, data) {
-    if (err)
+  console.log(req.body);
+  User.getUsername(req.body.token, (err, data) => {
+    if (err) {
       if (err.message === "not_found")
         return res.status(404).send({
-          message: `Not found User with username ${username}.`,
+          message: `Not found username with specified token.`,
         });
       else
         return res.status(500).send({
           status: "Failed",
-          error: err.message || "Error retrieving token from database",
+          error: err.message || "Error retrieving token with from database",
         });
-    else if (data.valid) {
-      User.nullToken(username, (err) => {
+    } else {
+      const username = JSON.parse(
+        JSON.stringify(data)
+      )[0].username.toLowerCase();
+      authToken.authorizeToken(username, function (err, data) {
         if (err)
-          res.status(500).send({
+          if (err.message === "not_found")
+            return res.status(404).send({
+              message: `Not found User with username ${username}.`,
+            });
+          else
+            return res.status(500).send({
+              status: "Failed",
+              error: err.message || "Error retrieving token from database",
+            });
+        else if (data.valid) {
+          User.nullToken(username, (err) => {
+            if (err)
+              res.status(500).send({
+                status: "Failed",
+                error: err.message || "Error Updating Token to database.",
+              });
+          });
+          res.status(201).send({
+            status: "Success",
+            message: "Logout Success ! ",
+          });
+        } else
+          return res.status(401).send({
             status: "Failed",
-            error: err.message || "Error Updating Token to database.",
+            message: "Logout failed because the user not login",
           });
       });
-      res.status(201).send({
-        status: "Success",
-        message: "Logout Success ! ",
-      });
-    } else
-      return res.status(401).send({
-        status: "Failed",
-        message: "Logout failed because the user not login",
-      });
+    }
   });
 };

@@ -78,6 +78,6 @@ module.exports = (app) => {
   app.post("/api/login", user.login);
   app.post("/api/logout", user.logout);
   app.post("/api/register", user.register);
-  app.put("/api/user/:token", user.updateUser);
+  app.put("/api/user", user.updateUser);
   app.get("/api/areyoulogin/:username", user.checkToken);
 };
