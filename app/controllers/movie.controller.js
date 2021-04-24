@@ -1,4 +1,6 @@
 const Movie = require("../models/movie.model.js");
+const authToken = require("../middleware/authToken");
+const User = require("../models/userModel");
 
 exports.findAll = (req, res) => {
   Movie.getAll((err, data) => {
@@ -74,162 +76,352 @@ exports.findOne = (req, res) => {
 };
 
 exports.update = (req, res) => {
-  // Validate Request
-  if (!req.body) {
-    res.status(400).send({
-      message: "Content can not be empty!",
-    });
-  }
-
-  const movie = {
-    duration: req.body.duration,
-    genre: req.body.genre,
-    synopsis: req.body.synopsis,
-    title: req.body.title,
-    year: req.body.year,
-  };
-
-  Movie.updateData(req.params.movie_id, movie, (err, data) => {
+  User.getUsername(req.params.token, (err, data) => {
     if (err) {
-      if (err.kind === "not_found") {
-        res.status(404).send({
-          status: "empty",
-          message: `Not found Movie with id ${req.params.movie_id}.`,
+      if (err.message === "not_found")
+        return res.status(404).send({
+          message: `Not found User with username ${username}.`,
         });
-      } else {
-        res.status(500).send({
-          status: "error",
-          error: err.message,
-          message: "Error updating movie with id " + req.params.movie_id,
+      else
+        return res.status(500).send({
+          status: "Failed",
+          error: err.message || "Error retrieving token with from database",
         });
-      }
     } else {
-      res.status(200).send({
-        status: "success",
-        message: "A Movie has been updated.",
-        movie: data,
-      });
-    }
-  });
-};
-
-exports.updatePoster = (req, res) => {
-  // Upload file
-  if (req.file == undefined) {
-    return res.status(400).send(`You must select a file.`);
-  }
-
-  const file = req.file.path;
-
-  if (!file) {
-    res.status(400).send({
-      status: false,
-      data: "No File is selected.",
-    });
-  }
-
-  // ambil nama file
-  const img = req.file.filename;
-
-  Movie.updatePoster(req.params.movie_id, img, (err, data) => {
-    if (err) {
-      res.status(500).send({
-        status: "Failed",
-        message: `${err.message}. Some error occured while trying update poster movie id ${req.params.id}`,
-      });
-    } else {
-      res.status(200).send({
-        status: "success",
-        message: `Poster movie with id ${req.params.movie_id} successfully updated.`,
-      });
-    }
-  });
-};
-
-exports.create = (req, res) => {
-  // Validate request
-  if (!req.body) {
-    res.status(400).send({
-      message: "Content can not be empty!",
-    });
-  }
-
-  try {
-    // Upload file
-    if (req.file == undefined) {
-      return res.status(400).send(`You must select a file.`);
-    }
-
-    const file = req.file.path;
-
-    if (!file) {
-      res.status(400).send({
-        status: false,
-        data: "No File is selected.",
-      });
-    }
-    // ambil path
-    const img = req.file.filename;
-
-    const movie = new Movie({
-      title: req.body.title,
-      duration: req.body.duration,
-      acc_rating: 0,
-      genre: req.body.genre,
-      poster: img,
-      synopsis: req.body.synopsis,
-      year: req.body.year,
-    });
-
-    Movie.create(movie, (err, data) => {
-      if (err) {
-        res.status(500).send({
-          message:
-            err.message || " Some error occurred while inserting new movie.",
-        });
-      } else {
-        Movie.getLastInserted((err, data) => {
-          const id = data;
+      const username = JSON.parse(
+        JSON.stringify(data)
+      )[0].username.toLowerCase();
+      if (username === "admin") {
+        authToken.authorizeToken(username, function (err, data) {
           if (err) {
-            res.status(500).send({
-              message:
-                err.message ||
-                " Some error occurred while get last inserted id movie.",
+            if (err.message === "not_found")
+              return res.status(404).send({
+                message: `Not found User with username ${username}.`,
+              });
+            else
+              return res.status(500).send({
+                status: "Failed",
+                error:
+                  err.message || "Error retrieving token with from database",
+              });
+          } else if (!data.valid) {
+            return res.status(403).send({
+              status: "Forbidden Access",
+              message: "must login first",
             });
           } else {
-            let query = "INSERT INTO director (director_id, movie_id) VALUES ?";
-            Movie.insertCast(query, id, req.body.director, (err) => {
+            let img = "";
+
+            if (Object.entries(req.body).length === 0) {
+              return res.status(200).send({ message: "No data updated." });
+            }
+
+            // Upload file
+            if (req.file != undefined) {
+              const file = req.file.path;
+
+              if (!file) {
+                return res.status(400).send({
+                  status: false,
+                  data: "No File is selected.",
+                });
+              }
+
+              // ambil path
+              img = req.file.filename;
+            }
+
+            // Jika ingin update list actor
+            if (req.body.actor != undefined) {
+              let query = "DELETE FROM movie_cast WHERE movie_id = ?";
+              Movie.deleteCast(query, req.params.movie_id, (err) => {
+                if (err) {
+                  res.status(500).send({
+                    message:
+                      err.message ||
+                      " Some error occurred while delete actor list associated with movie id " +
+                        req.params.movie_id +
+                        ".",
+                  });
+                } else {
+                  query =
+                    "INSERT INTO movie_cast (actor_id, movie_id) VALUES ?";
+                  Movie.insertCast(
+                    query,
+                    req.params.movie_id,
+                    req.body.actor,
+                    (err) => {
+                      if (err) {
+                        res.status(500).send({
+                          message:
+                            err.message ||
+                            " Some error occurred while updated actor list.",
+                        });
+                      }
+                    }
+                  );
+                }
+              });
+            }
+
+            // Jika ingin update list director
+            if (req.body.director != undefined) {
+              let query = "DELETE FROM director WHERE movie_id = ?";
+              Movie.deleteCast(query, req.params.movie_id, (err) => {
+                if (err) {
+                  res.status(500).send({
+                    message:
+                      err.message ||
+                      " Some error occurred while delete director list associated with movie id " +
+                        req.params.movie_id +
+                        ".",
+                  });
+                } else {
+                  let query =
+                    "INSERT INTO director (director_id, movie_id) VALUES ?";
+                  Movie.insertCast(
+                    query,
+                    req.params.movie_id,
+                    req.body.director,
+                    (err) => {
+                      if (err) {
+                        res.status(500).send({
+                          message:
+                            err.message ||
+                            " Some error occurred while updated director list.",
+                        });
+                      }
+                    }
+                  );
+                }
+              });
+            }
+
+            let movie = new Movie({
+              acc_rating: 0,
+              duration: req.body.duration,
+              genre: req.body.genre,
+              synopsis: req.body.synopsis,
+              poster: img,
+              title: req.body.title,
+              year: req.body.year,
+            });
+
+            Movie.findById(req.params.movie_id, (err, data) => {
               if (err) {
                 res.status(500).send({
+                  status: "error",
+                  error: err.message,
                   message:
-                    err.message ||
-                    " Some error occurred while inserted director database.",
+                    "Error updating movie with id " + req.params.movie_id,
                 });
               } else {
-                query = "INSERT INTO movie_cast (actor_id, movie_id) VALUES ?";
-                Movie.insertCast(query, id, req.body.cast, (err) => {
+                const oldDataMovie = JSON.parse(JSON.stringify(data));
+
+                if (movie.duration == undefined) {
+                  movie.duration = oldDataMovie.duration;
+                }
+
+                if (movie.title == undefined) {
+                  movie.title = oldDataMovie.title;
+                }
+
+                movie.acc_rating = oldDataMovie.acc_rating;
+
+                if (movie.poster == "") {
+                  movie.poster = oldDataMovie.poster;
+                }
+
+                if (movie.genre == undefined) {
+                  movie.genre = oldDataMovie.genre;
+                }
+                if (movie.year == undefined) {
+                  movie.year = oldDataMovie.year;
+                }
+                if (movie.synopsis == undefined) {
+                  movie.synopsis = oldDataMovie.synopsis;
+                }
+
+                Movie.updateData(req.params.movie_id, movie, (err, data) => {
                   if (err) {
-                    res.status(500).send({
-                      message:
-                        err.message ||
-                        " Some error occurred while inserted movie_cast database.",
+                    if (err.kind === "not_found") {
+                      res.status(404).send({
+                        status: "empty",
+                        message: `Not found Movie with id ${req.params.movie_id}.`,
+                      });
+                    } else {
+                      res.status(500).send({
+                        status: "error",
+                        error: err.message,
+                        message:
+                          "Error updating movie with id " + req.params.movie_id,
+                      });
+                    }
+                  } else {
+                    res.status(200).send({
+                      status: "success",
+                      message: "A Movie has been updated.",
+                      movie: data,
                     });
                   }
                 });
               }
             });
-
-            res.status(200).send({
-              status: "succes",
-              message: "New movie has been added to database",
-            });
           }
         });
+      } else {
+        return res.status(403).send({
+          status: "Forbidden Access",
+          message: "Only admin can post!",
+        });
       }
-    });
-  } catch (err) {
-    res.status(500).send({
-      message: err.message || " Some error occurred while inserting new movie.",
-    });
-  }
+    }
+  });
+};
+
+exports.create = (req, res) => {
+  User.getUsername(req.params.token, (err, data) => {
+    if (err) {
+      if (err.message === "not_found")
+        return res.status(404).send({
+          message: `Not found User with username ${username}.`,
+        });
+      else
+        return res.status(500).send({
+          status: "Failed",
+          error: err.message || "Error retrieving token with from database",
+        });
+    } else {
+      const username = JSON.parse(
+        JSON.stringify(data)
+      )[0].username.toLowerCase();
+      if (username === "admin") {
+        authToken.authorizeToken(username, function (err, data) {
+          if (err) {
+            if (err.message === "not_found")
+              return res.status(404).send({
+                message: `Not found User with username ${username}.`,
+              });
+            else
+              return res.status(500).send({
+                status: "Failed",
+                error:
+                  err.message || "Error retrieving token with from database",
+              });
+          } else if (!data.valid) {
+            return res.status(403).send({
+              status: "Forbidden Access",
+              message: "must login first",
+            });
+          } else {
+            // Validate request
+            if (!req.body) {
+              res.status(400).send({
+                message: "Content can not be empty!",
+              });
+            }
+
+            try {
+              // Upload file
+              if (req.file == undefined) {
+                return res.status(400).send(`You must select a file.`);
+              }
+
+              const file = req.file.path;
+
+              if (!file) {
+                res.status(400).send({
+                  status: false,
+                  data: "No File is selected.",
+                });
+              }
+              // ambil path
+              const img = req.file.filename;
+
+              const movie = new Movie({
+                title: req.body.title,
+                duration: req.body.duration,
+                acc_rating: 0,
+                genre: req.body.genre,
+                poster: img,
+                synopsis: req.body.synopsis,
+                year: req.body.year,
+              });
+
+              Movie.create(movie, (err, data) => {
+                if (err) {
+                  res.status(500).send({
+                    message:
+                      err.message ||
+                      " Some error occurred while inserting new movie.",
+                  });
+                } else {
+                  Movie.getLastInserted((err, data) => {
+                    const id = data;
+                    if (err) {
+                      res.status(500).send({
+                        message:
+                          err.message ||
+                          " Some error occurred while get last inserted id movie.",
+                      });
+                    } else {
+                      let query =
+                        "INSERT INTO director (director_id, movie_id) VALUES ?";
+                      Movie.insertCast(
+                        query,
+                        JSON.parse(JSON.stringify(data))[0].id,
+                        req.body.director,
+                        (err) => {
+                          if (err) {
+                            res.status(500).send({
+                              message:
+                                err.message ||
+                                " Some error occurred while inserted director database.",
+                            });
+                          } else {
+                            query =
+                              "INSERT INTO movie_cast (actor_id, movie_id) VALUES ?";
+                            Movie.insertCast(
+                              query,
+                              id,
+                              req.body.cast,
+                              (err) => {
+                                if (err) {
+                                  res.status(500).send({
+                                    message:
+                                      err.message ||
+                                      " Some error occurred while inserted movie_cast database.",
+                                  });
+                                }
+                              }
+                            );
+                          }
+                        }
+                      );
+
+                      res.status(200).send({
+                        status: "succes",
+                        message: "New movie has been added to database",
+                      });
+                    }
+                  });
+                }
+              });
+            } catch (err) {
+              res.status(500).send({
+                message:
+                  err.message ||
+                  " Some error occurred while inserting new movie.",
+              });
+            }
+          }
+        });
+      } else {
+        return res.status(403).send({
+          status: "Forbidden Access",
+          message: "Only admin can post!",
+        });
+      }
+    }
+  });
 };

@@ -6,9 +6,10 @@ const Watchlist = function (rating) {
 
 Watchlist.getAUserList = (username, result) => {
   sql.query(
-    "SELECT movie.* FROM watchlist JOIN movie ON movie.movie_id = watchlist.movie_id where watchlist.username = 'vin'",
+    `SELECT movie.* FROM watchlist JOIN movie ON movie.movie_id = watchlist.movie_id where watchlist.username = "${username}"`,
     username,
     (err, res) => {
+      console.log(res);
       if (err) {
         result(null, err);
         return;
