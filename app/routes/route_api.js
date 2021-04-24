@@ -76,6 +76,7 @@ module.exports = (app) => {
   app.get("/api/user", user.findAll);
   app.get("/api/user/:token", user.findUser);
   app.post("/api/login", user.login);
+  app.post("/api/logout", user.logout);
   app.post("/api/register", user.register);
   app.put("/api/user/:token", user.updateUser);
   app.get("/api/areyoulogin/:username", user.checkToken);

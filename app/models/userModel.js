@@ -168,4 +168,18 @@ User.getToken = (username, result) => {
   );
 };
 
+User.nullToken = (username, token, result) => {
+  sql.query(
+    `UPDATE users SET token = NULL WHERE username ="${username}"`,
+    (err) => {
+      if (err) {
+        console.log("error: ", err);
+        return result(err, null);
+      }
+
+      console.log("Token Updated to Database");
+    }
+  );
+};
+
 module.exports = User;
