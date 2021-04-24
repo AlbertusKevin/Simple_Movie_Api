@@ -34,12 +34,21 @@ Movie.getLastInserted = (result) => {
   );
 };
 
-Movie.insertCast = (query, data, director, result) => {
-  const movie_id = JSON.parse(JSON.stringify(data))[0].movie_id;
-  const dir = director.split(",");
+Movie.deleteCast = (query, movie_id, result) => {
+  sql.query(query, movie_id, (err, res) => {
+    if (err) {
+      result(null, err);
+      return;
+    }
+    result(null, res);
+  });
+};
+
+Movie.insertCast = (query, movie_id, cast, result) => {
+  const casts = cast.split(",");
   let rows = [];
 
-  dir.forEach((id) => {
+  casts.forEach((id) => {
     rows.push([id, movie_id]);
   });
 
@@ -95,18 +104,10 @@ Movie.getCast = (query, movie_id, result) => {
 
 Movie.updateData = (movie_id, movie, result) => {
   sql.query(
-    "UPDATE movie SET duration = ?, genre = ?, synopsis = ?, title = ?, year = ? WHERE movie_id = ?",
-    [
-      movie.duration,
-      movie.genre,
-      movie.synopsis,
-      movie.title,
-      movie.year,
-      movie_id,
-    ],
+    "UPDATE movie SET ? WHERE movie_id = ?",
+    [movie, movie_id],
     (err, res) => {
       if (err) {
-        console.log("error: ", err);
         result(err, null);
         return;
       }

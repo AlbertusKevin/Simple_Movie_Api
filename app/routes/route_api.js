@@ -8,72 +8,76 @@ module.exports = (app) => {
   const watched = require("../controllers/watched.controller.js");
   const watchlist = require("../controllers/watchlist.controller.js");
   const cast = require("../controllers/cast.controller.js");
+  const user = require("../controllers/userController.js");
+
+  app.use(function (req, res, next) {
+    res.header(
+      "Access-Control-Allow-Headers",
+      "Authorization, x-access-token, Origin, Content-Type, Accept"
+    );
+    next();
+  });
 
   //? ======================================
   //! Api for Movie
   //? ======================================
-  // Post Movie
-  app.post("/api/movie", uploadPoster.single("poster"), movie.create);
-  // Retrieve all movie
+  app.post("/api/movie/:token", uploadPoster.single("poster"), movie.create);
   app.get("/api/movie", movie.findAll);
-  // Retrieve a movie
   app.get("/api/movie/:movie_id", movie.findOne);
-  // Update data movie
-  app.put("/api/movie/:movie_id", movie.update);
-  // Update poster movie
   app.put(
-    "/api/movie/poster/:movie_id",
+    "/api/movie/:movie_id/:token",
     uploadPoster.single("poster"),
-    movie.updatePoster
+    movie.update
   );
 
   //? ======================================
-  //! Api for Genre
+  //! Api for Genre (done req with token)
   //? ======================================
-  //Retrieve all genre
   app.get("/api/genre", genre.findAll);
-  //Post new genre
   app.post("/api/genre", genre.create);
+
   //? ======================================
-  //! Api for Comment
+  //! Api for Comment (done req with token)
   //? ======================================
-  // Memberikan komentar movie tertentu
-  app.post("/api/comment/:movie_id/:username", comment.create);
-  // Melihat komentar movie tertentu
+  app.post("/api/comment/:movie_id/:token", comment.create);
   app.get("/api/comment/:movie_id", comment.getFromMovie);
+
   // ? ======================================
-  // ! Api for Rating
+  // ! Api for Rating (done req with token)
   // ? ======================================
-  // Memberikan Rating
-  app.post("/api/rating/:movie_id/:username", rating.create);
-  // Mengubah Rating
-  app.put("/api/rating/:movie_id/:username", rating.updateRating);
+  app.post("/api/rating/:movie_id/:token", rating.create);
+  app.put("/api/rating/:movie_id/:token", rating.updateRating);
 
   //? ======================================
-  //! Api for Watched
+  //! Api for Watched (done req with token)
   //? ======================================
-  // Melihat daftar watched
-  app.get("/api/watched/:username", watched.getAUserList);
-  // Menambahkan Movie ke daftar Watched
-  app.post("/api/watched/:username/:movie_id", watched.addToList);
-  // Menghapus Movie dari daftar watched
-  app.delete("/api/watched/:username/:movie_id", watched.deleteFromList);
+  app.get("/api/watched/:token", watched.getAUserList);
+  app.post("/api/watched/:movie_id/:token", watched.addToList);
+  app.delete("/api/watched/:movie_id/:token", watched.deleteFromList);
 
   //? ======================================
-  //! Api for Watchlist
+  //! Api for Watchlist (done req with token)
   //? ======================================
-  // Melihat daftar watchlist
-  app.get("/api/watchlist/:username", watchlist.getAUserList);
-  // Menambahkan Movie ke daftar Watchlist
-  app.post("/api/watchlist/:username/:movie_id", watchlist.addToList);
-  // Menghapus Movie dari daftar watchlist
-  app.delete("/api/watchlist/:username/:movie_id", watchlist.deleteFromList);
+  app.get("/api/watchlist/:token", watchlist.getAUserList);
+  app.post("/api/watchlist/:movie_id/:token", watchlist.addToList);
+  app.delete("/api/watchlist/:movie_id/:token", watchlist.deleteFromList);
 
   //? ======================================
-  //! Api for Cast
+  //! Api for Cast (done with req token)
   //? ======================================
-  app.post("/api/cast", uploadPhoto.single("photo"), cast.insertCast);
+  app.post("/api/cast/:token", uploadPhoto.single("photo"), cast.insertCast);
   app.get("/api/cast", cast.getAllCast);
   app.get("/api/cast/:id", cast.getCastDetail);
-  app.put("/api/cast/:id", uploadPhoto.single("photo"), cast.updateData);
+  app.put("/api/cast/:id/:token", uploadPhoto.single("photo"), cast.updateData);
+
+  //? ======================================
+  //! Api for User (done with req token)
+  //? ======================================
+  app.get("/api/user", user.findAll);
+  app.get("/api/user/:token", user.findUser);
+  app.post("/api/login", user.login);
+  app.post("/api/logout", user.logout);
+  app.post("/api/register", user.register);
+  app.put("/api/user/:token", user.updateUser);
+  app.get("/api/areyoulogin/:username", user.checkToken);
 };
