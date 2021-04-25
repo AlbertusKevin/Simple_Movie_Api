@@ -19,10 +19,10 @@ User.getUsername = (token, result) => {
         queryResult = result(null, res);
       } else {
         res.push("There is no record in database.");
-        queryResult = result(null, res);
+        queryResult = result({ message: "not_found" }, null);
       }
 
-      return queryResult;
+        return queryResult;
     }
   );
 };

@@ -73,7 +73,7 @@ module.exports = (app) => {
   //? ======================================
   //! Api for User (done with req token)
   //? ======================================
-  app.get("/api/user", user.findAll);
+  app.get("/api/users", user.findAll);
   app.get("/api/user/:token", user.findUser);
   app.post("/api/login", user.login);
   app.post("/api/logout", user.logout);
