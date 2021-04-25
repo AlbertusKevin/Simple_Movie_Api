@@ -3,11 +3,11 @@ const authToken = require("../middleware/authToken");
 const User = require("../models/userModel");
 
 exports.insertCast = (req, res) => {
-  User.getUsername(req.params.token, (err, data) => {
+  User.getUsername(req.body.token, (err, data) => {
     if (err) {
       if (err.message === "not_found")
         return res.status(404).send({
-          message: `Not found User with username ${username}.`,
+          message: `Not found username with specified token.`,
         });
       else
         return res.status(500).send({
@@ -46,7 +46,9 @@ exports.insertCast = (req, res) => {
 
             // Upload file
             if (req.file == undefined) {
-              return res.status(400).send(`You must select a file.`);
+              return res
+                .status(400)
+                .send({ status: "failed", message: `You must select a file.` });
             }
 
             const file = req.file.path;
@@ -60,7 +62,7 @@ exports.insertCast = (req, res) => {
 
             // ambil path
             const img = req.file.filename;
-            let date = new Date(newCast.dob)
+            let date = new Date(req.body.dob)
               .toISOString()
               .slice(0, 19)
               .replace("T", " ");
@@ -121,10 +123,15 @@ exports.getAllCast = (req, res) => {
 exports.getCastDetail = (req, res) => {
   Cast.getCastDetail(req.params.id, (err, data) => {
     if (err) {
-      res.status(500).send({
-        status: "error",
-        message: `${err.message} Some error occured while trying to get detal cast id ${req.params.id}`,
-      });
+      if (err.kind === "not_found")
+        return res.status(404).send({
+          message: `Not found cast with id ${req.params.id}.`,
+        });
+      else
+        res.status(500).send({
+          status: "error",
+          message: `${err.message} Some error occured while trying to get detal cast id ${req.params.id}`,
+        });
     } else {
       res.status(200).send({
         status: "success",
@@ -136,7 +143,7 @@ exports.getCastDetail = (req, res) => {
 };
 
 exports.updateData = (req, res) => {
-  User.getUsername(req.params.token, (err, data) => {
+  User.getUsername(req.body.token, (err, data) => {
     if (err) {
       if (err.message === "not_found")
         return res.status(404).send({
@@ -172,8 +179,10 @@ exports.updateData = (req, res) => {
           } else {
             let img = "";
 
-            if (Object.entries(req.body).length === 0) {
-              return res.status(200).send({ message: "No data updated." });
+            if (Object.entries(req.body).length === 1) {
+              return res
+                .status(200)
+                .send({ status: "ok", message: "No data updated." });
             }
 
             // Upload file
@@ -217,7 +226,10 @@ exports.updateData = (req, res) => {
                   message: `${err.message} Some error occured while trying to get old data cast by id ${req.params.id}`,
                 });
               } else {
-                const cast = JSON.parse(JSON.stringify(data))[0];
+                const cast = JSON.parse(JSON.stringify(data));
+                console.log(newCast);
+                console.log(cast);
+
                 if (newCast.name == undefined) {
                   newCast.name = cast.name;
                 }

@@ -24,17 +24,25 @@ Cast.getAllCast = (result) => {
 Cast.getCastDetail = (id, result) => {
   sql.query(`SELECT * FROM cast WHERE id = ${id}`, (err, res) => {
     if (err) {
-      result(null, err);
+      console.log("error: ", err);
+      result(err, null);
       return;
     }
-    result(null, res);
+
+    if (res.length) {
+      console.log("found movie: ", res[0]);
+      result(null, res[0]);
+      return;
+    }
+
+    result({ kind: "not_found" }, null);
   });
 };
 
 Cast.insertNew = (cast, result) => {
   sql.query("INSERT INTO cast SET ?", cast, (err, res) => {
     if (err) {
-      result(null, err);
+      result(err, null);
       return;
     }
     result(null, res);

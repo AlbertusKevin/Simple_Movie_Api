@@ -8,7 +8,7 @@ const Comment = function (comment) {
 
 Comment.getFromMovie = (movie_id, result) => {
   sql.query(
-    "SELECT * FROM comment where movie_id = ?",
+    "SELECT username, comment FROM comment where movie_id = ?",
     movie_id,
     (err, res) => {
       if (err) {

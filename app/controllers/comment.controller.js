@@ -24,11 +24,11 @@ exports.getFromMovie = (req, res) => {
 };
 
 exports.create = (req, res) => {
-  User.getUsername(req.params.token, (err, data) => {
+  User.getUsername(req.body.token, (err, data) => {
     if (err) {
       if (err.message === "not_found")
         return res.status(404).send({
-          message: `Not found User with username ${username}.`,
+          message: `Not found username with specified token.`,
         });
       else
         return res.status(500).send({
@@ -62,11 +62,10 @@ exports.create = (req, res) => {
             });
           }
 
-          // Create a comment
           const comment = new Comment({
             username: username,
             movie_id: req.params.movie_id,
-            comment: req.body.comments,
+            comment: req.body.comment,
           });
 
           Comment.create(comment, (err, data) => {

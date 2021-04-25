@@ -1,33 +1,13 @@
 const Rating = require("../models/rating.model.js");
 const authToken = require("../middleware/authToken");
 const User = require("../models/userModel");
-exports.getFromMovie = (req, res) => {
-  Comment.getFromMovie(req.params.movie_id, (err, data) => {
-    if (err)
-      res.status(500).send({
-        message:
-          err.message ||
-          "Some error occurred while retrieving list of comment from movie_id " +
-            req.params.movie_id,
-      });
-    else
-      res.status(200).send({
-        status: "Success",
-        message:
-          "Comments from movie id " +
-          req.params.movie_id +
-          " has been retrieved.",
-        comments: data,
-      });
-  });
-};
 
 exports.create = (req, res) => {
-  User.getUsername(req.params.token, (err, data) => {
+  User.getUsername(req.body.token, (err, data) => {
     if (err) {
       if (err.message === "not_found")
         return res.status(404).send({
-          message: `Not found User with username ${username}.`,
+          message: `Not found username with specified token.`,
         });
       else
         return res.status(500).send({
@@ -99,11 +79,11 @@ exports.create = (req, res) => {
 };
 
 exports.updateRating = (req, res) => {
-  User.getUsername(req.params.token, (err, data) => {
+  User.getUsername(req.body.token, (err, data) => {
     if (err) {
       if (err.message === "not_found")
         return res.status(404).send({
-          message: `Not found User with username ${username}.`,
+          message: `Not found username with specified token.`,
         });
       else
         return res.status(500).send({

@@ -7,7 +7,7 @@ exports.getAUserList = (req, res) => {
     if (err) {
       if (err.message === "not_found")
         return res.status(404).send({
-          message: `Not found User with username ${username}.`,
+          message: `Not found username with specified token.`,
         });
       else
         return res.status(500).send({
@@ -57,11 +57,11 @@ exports.getAUserList = (req, res) => {
 };
 
 exports.addToList = (req, res) => {
-  User.getUsername(req.params.token, (err, data) => {
+  User.getUsername(req.body.token, (err, data) => {
     if (err) {
       if (err.message === "not_found")
         return res.status(404).send({
-          message: `Not found User with username ${username}.`,
+          message: `Not found username with specified token.`,
         });
       else
         return res.status(500).send({
@@ -121,11 +121,11 @@ exports.addToList = (req, res) => {
 };
 
 exports.deleteFromList = (req, res) => {
-  User.getUsername(req.params.token, (err, data) => {
+  User.getUsername(req.body.token, (err, data) => {
     if (err) {
       if (err.message === "not_found")
         return res.status(404).send({
-          message: `Not found User with username ${username}.`,
+          message: `Not found username with specified token.`,
         });
       else
         return res.status(500).send({

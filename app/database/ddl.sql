@@ -40,7 +40,6 @@ CREATE TABLE watched (
 CREATE TABLE watchlist (
 	username VARCHAR(25) NOT NULL,
 	movie_id INT NOT NULL,
-    title_list VARCHAR(25) NOT NULL,
     PRIMARY KEY (username, movie_id),
 	FOREIGN KEY (username) REFERENCES users (username),
 	FOREIGN KEY (movie_id) REFERENCES movie (movie_id)

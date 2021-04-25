@@ -76,7 +76,7 @@ exports.findOne = (req, res) => {
 };
 
 exports.update = (req, res) => {
-  User.getUsername(req.params.token, (err, data) => {
+  User.getUsername(req.body.token, (err, data) => {
     if (err) {
       if (err.message === "not_found")
         return res.status(404).send({
@@ -280,7 +280,7 @@ exports.update = (req, res) => {
 };
 
 exports.create = (req, res) => {
-  User.getUsername(req.params.token, (err, data) => {
+  User.getUsername(req.body.token, (err, data) => {
     if (err) {
       if (err.message === "not_found")
         return res.status(404).send({
@@ -292,6 +292,7 @@ exports.create = (req, res) => {
           error: err.message || "Error retrieving token with from database",
         });
     } else {
+      // console.log(JSON.parse(JSON.stringify(data))[0].username);
       const username = JSON.parse(
         JSON.stringify(data)
       )[0].username.toLowerCase();
@@ -324,7 +325,10 @@ exports.create = (req, res) => {
             try {
               // Upload file
               if (req.file == undefined) {
-                return res.status(400).send(`You must select a file.`);
+                return res.status(400).send({
+                  status: "error",
+                  message: `You must select a file for poster.`,
+                });
               }
 
               const file = req.file.path;

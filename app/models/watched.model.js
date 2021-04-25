@@ -6,8 +6,7 @@ const Watched = function (rating) {
 
 Watched.getAUserList = (username, result) => {
   sql.query(
-    "SELECT movie.* FROM watched JOIN movie ON movie.movie_id = watched.movie_id where watched.username = 'vin'",
-    username,
+    `SELECT movie.* FROM watched JOIN movie ON movie.movie_id = watched.movie_id where watched.username = "${username}"`,
     (err, res) => {
       if (err) {
         result(null, err);

@@ -1,6 +1,7 @@
 const Genre = require("../models/genre.model.js");
 const authToken = require("../middleware/authToken");
 const User = require("../models/userModel");
+const { Validator } = require("node-input-validator");
 
 exports.findAll = (req, res) => {
   Genre.getAll((err, data) => {
@@ -53,27 +54,35 @@ exports.create = (req, res) => {
               message: "must login first",
             });
           } else {
-            // Validate request
-            if (!req.body) {
-              res.status(400).send({
-                message: "Content can not be empty!",
-              });
-            }
-
-            // Create a Genre
-            const genre = new Genre({
-              genre: req.body.genre,
+            const v = new Validator(req.body, {
+              genre: "required",
             });
-
-            Genre.create(genre, (err, data) => {
-              if (err)
-                res.status(500).send({
-                  message:
-                    err.message ||
-                    "Some error occurred while creating the genre.",
+            v.check().then((matched) => {
+              if (!matched) {
+                console.log(v.errors);
+                return res.status(422).send({
+                  status: "Failed",
+                  error: v.errors,
                 });
-              else
-                res.status(201).send({ message: "genre created", genre: data });
+              } else {
+                // Create a Genre
+                const genre = new Genre({
+                  genre: req.body.genre,
+                });
+
+                Genre.create(genre, (err, data) => {
+                  if (err)
+                    res.status(500).send({
+                      message:
+                        err.message ||
+                        "Some error occurred while creating the genre.",
+                    });
+                  else
+                    res
+                      .status(201)
+                      .send({ message: "genre created", genre: data });
+                });
+              }
             });
           }
         });

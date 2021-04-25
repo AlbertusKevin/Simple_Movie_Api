@@ -22,13 +22,13 @@ User.getUsername = (token, result) => {
         queryResult = result({ message: "not_found" }, null);
       }
 
-        return queryResult;
+      return queryResult;
     }
   );
 };
 
 User.getAll = (result) => {
-  sql.query("SELECT username, email FROM users", (err, res) => {
+  sql.query("SELECT name, username, email FROM users", (err, res) => {
     var queryResult;
     if (err) {
       console.log("error: ", err);
@@ -48,7 +48,7 @@ User.getAll = (result) => {
 
 User.findByUsername = (username, result) => {
   sql.query(
-    `SELECT * FROM users WHERE username = "${username}"`,
+    `SELECT name, username, email, password FROM users WHERE username = "${username}"`,
     (err, res) => {
       var queryResult;
       if (err) {
@@ -109,34 +109,37 @@ User.insertUser = (newUser, result) => {
 };
 
 User.updateByUsername = (user, oldPassword, result) => {
-    if(user.password !== undefined) {
-        const checkPassword = bcrypt.compareSync(user.password, oldPassword);
-        if (checkPassword) {
-            user.password = oldPassword;
-        } else {
-            const salt = bcrypt.genSaltSync(10);
-            const hashedPassword = bcrypt.hashSync(user.password, salt);
-            user.password = hashedPassword;
-        }
+  if (user.password !== undefined) {
+    const checkPassword = bcrypt.compareSync(user.password, oldPassword);
+    if (checkPassword) {
+      user.password = oldPassword;
     } else {
-        user.password = oldPassword;
+      const salt = bcrypt.genSaltSync(10);
+      const hashedPassword = bcrypt.hashSync(user.password, salt);
+      user.password = hashedPassword;
     }
+  } else {
+    user.password = oldPassword;
+  }
 
-    sql.query("UPDATE users SET email = ?, name = ?, password = ? WHERE username = ?", [user.email, user.name, user.password, user.username], (err) => {
+  sql.query(
+    "UPDATE users SET email = ?, name = ?, password = ? WHERE username = ?",
+    [user.email, user.name, user.password, user.username],
+    (err) => {
+      var queryResult;
+      if (err) {
+        console.log("error: ", err);
+        queryResult = result(null, err);
+      } else if (result.affectedRows > 0) {
+        queryResult = result({ message: "not_found" }, null);
+      } else {
+        console.log("updated user: " + { ...user });
+        queryResult = result(null, { ...user });
+      }
 
-        var queryResult;
-        if (err) {
-            console.log("error: ", err);
-            queryResult = result(null, err);
-        } else if (result.affectedRows > 0) {
-            queryResult = result({message: "not_found"}, null);
-        } else {
-            console.log("updated user: " + {...user});
-            queryResult = result(null, {...user});
-        }
-
-        return queryResult;
-    });
+      return queryResult;
+    }
+  );
 };
 
 User.insertToken = (username, token, result) => {
