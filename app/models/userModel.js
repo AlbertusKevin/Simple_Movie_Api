@@ -108,28 +108,35 @@ User.insertUser = (newUser, result) => {
   });
 };
 
-User.updateByUsername = (username, user, result) => {
-  const salt = bcrypt.genSaltSync(10);
-  const hashedPassword = bcrypt.hashSync(user.password, salt);
-  user.password = hashedPassword;
-  sql.query(
-    "UPDATE users SET email = ?, name = ?, password = ? WHERE username = ?",
-    [user.email, user.name, user.password, username],
-    (err, res) => {
-      var queryResult;
-      if (err) {
-        console.log("error: ", err);
-        queryResult = result(null, err);
-      } else if (result.affectedRows > 0) {
-        queryResult = result({ message: "not_found" }, null);
-      } else {
-        console.log("updated user: ", { username: username, ...user });
-        queryResult = result(null, { username: username, ...user });
-      }
-
-      return queryResult;
+User.updateByUsername = (user, oldPassword, result) => {
+    if(user.password !== undefined) {
+        const checkPassword = bcrypt.compareSync(user.password, oldPassword);
+        if (checkPassword) {
+            user.password = oldPassword;
+        } else {
+            const salt = bcrypt.genSaltSync(10);
+            const hashedPassword = bcrypt.hashSync(user.password, salt);
+            user.password = hashedPassword;
+        }
+    } else {
+        user.password = oldPassword;
     }
-  );
+
+    sql.query("UPDATE users SET email = ?, name = ?, password = ? WHERE username = ?", [user.email, user.name, user.password, user.username], (err) => {
+
+        var queryResult;
+        if (err) {
+            console.log("error: ", err);
+            queryResult = result(null, err);
+        } else if (result.affectedRows > 0) {
+            queryResult = result({message: "not_found"}, null);
+        } else {
+            console.log("updated user: " + {...user});
+            queryResult = result(null, {...user});
+        }
+
+        return queryResult;
+    });
 };
 
 User.insertToken = (username, token, result) => {
