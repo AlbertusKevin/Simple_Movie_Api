@@ -12,7 +12,7 @@ Comment.getFromMovie = (movie_id, result) => {
     movie_id,
     (err, res) => {
       if (err) {
-        result(null, err);
+        result(err, null);
         return;
       }
 

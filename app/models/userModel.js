@@ -14,7 +14,7 @@ User.getUsername = (token, result) => {
     (err, res) => {
       var queryResult;
       if (err) {
-        queryResult = result(null, err);
+        queryResult = result(err, null);
       } else if (res.length) {
         queryResult = result(null, res);
       } else {
@@ -32,7 +32,7 @@ User.getAll = (result) => {
     var queryResult;
     if (err) {
       console.log("error: ", err);
-      queryResult = result(null, err);
+      queryResult = result(err, null);
     } else if (res.length) {
       console.log("User ", res.length);
       queryResult = result(null, res);
@@ -129,7 +129,7 @@ User.updateByUsername = (user, oldPassword, result) => {
       var queryResult;
       if (err) {
         console.log("error: ", err);
-        queryResult = result(null, err);
+        queryResult = result(err, null);
       } else if (result.affectedRows > 0) {
         queryResult = result({ message: "not_found" }, null);
       } else {

@@ -9,7 +9,7 @@ Watched.getAUserList = (username, result) => {
     `SELECT movie.* FROM watched JOIN movie ON movie.movie_id = watched.movie_id where watched.username = "${username}"`,
     (err, res) => {
       if (err) {
-        result(null, err);
+        result(err, null);
         return;
       }
 

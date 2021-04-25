@@ -13,7 +13,7 @@ const Movie = function (movie) {
 Movie.create = (movie, result) => {
   sql.query("INSERT INTO movie SET ?", movie, (err, res) => {
     if (err) {
-      result(null, err);
+      result(err, null);
       return;
     }
     result(null, res);
@@ -25,7 +25,7 @@ Movie.getLastInserted = (result) => {
     "SELECT movie_id FROM movie ORDER BY movie_id DESC LIMIT 1",
     (err, res) => {
       if (err) {
-        result(null, err);
+        result(err, null);
         return;
       } else {
         result(null, res);
@@ -37,7 +37,7 @@ Movie.getLastInserted = (result) => {
 Movie.deleteCast = (query, movie_id, result) => {
   sql.query(query, movie_id, (err, res) => {
     if (err) {
-      result(null, err);
+      result(err, null);
       return;
     }
     result(null, res);
@@ -54,7 +54,7 @@ Movie.insertCast = (query, movie_id, cast, result) => {
 
   sql.query(query, [rows], (err, res) => {
     if (err) {
-      result(null, err);
+      result(err, null);
       return;
     }
     result(null, res);
@@ -64,7 +64,7 @@ Movie.insertCast = (query, movie_id, cast, result) => {
 Movie.getAll = (result) => {
   sql.query("SELECT * FROM movie", (err, res) => {
     if (err) {
-      result(null, err);
+      result(err, null);
       return;
     }
 
@@ -93,7 +93,7 @@ Movie.findById = (movie_id, result) => {
 Movie.getCast = (query, movie_id, result) => {
   sql.query(query, movie_id, (err, res) => {
     if (err) {
-      result(null, err);
+      result(err, null);
       return;
     } else {
       result(null, res);
@@ -129,7 +129,7 @@ Movie.updatePoster = (movie_id, filename, result) => {
     (err, res) => {
       if (err) {
         console.log(err);
-        result(null, err);
+        result(err, null);
         return;
       }
       result(null, res);

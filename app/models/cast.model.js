@@ -14,7 +14,7 @@ const Cast = function (cast) {
 Cast.getAllCast = (result) => {
   sql.query("SELECT photo, name, role FROM cast", (err, res) => {
     if (err) {
-      result(null, err);
+      result(err, null);
       return;
     }
     result(null, res);
@@ -52,7 +52,7 @@ Cast.insertNew = (cast, result) => {
 Cast.updateData = (id, cast, result) => {
   sql.query("UPDATE cast SET ? WHERE id = ?", [cast, id], (err, res) => {
     if (err) {
-      result(null, err);
+      result(err, null);
       return;
     }
     result(null, res);

@@ -11,7 +11,7 @@ Watchlist.getAUserList = (username, result) => {
     (err, res) => {
       console.log(res);
       if (err) {
-        result(null, err);
+        result(err, null);
         return;
       }
 
