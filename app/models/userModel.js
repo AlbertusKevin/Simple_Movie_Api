@@ -1,5 +1,5 @@
 const sql = require("./../database/db_conn");
-const bcrypt = require("bcrypt");
+const bcrypt = require("bcryptjs");
 
 const User = function (user) {
   (this.username = user.username),
