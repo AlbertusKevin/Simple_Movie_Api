@@ -52,8 +52,10 @@ Movie.insertCast = (query, movie_id, cast, result) => {
     rows.push([id, movie_id]);
   });
 
+  console.log(movie_id);
   sql.query(query, [rows], (err, res) => {
     if (err) {
+      console.log(err);
       result(err, null);
       return;
     }

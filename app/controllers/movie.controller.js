@@ -374,7 +374,7 @@ exports.create = (req, res) => {
                         "INSERT INTO director (director_id, movie_id) VALUES ?";
                       Movie.insertCast(
                         query,
-                        JSON.parse(JSON.stringify(data))[0].id,
+                        JSON.parse(JSON.stringify(id))[0].movie_id,
                         req.body.director,
                         (err) => {
                           if (err) {
@@ -388,8 +388,8 @@ exports.create = (req, res) => {
                               "INSERT INTO movie_cast (actor_id, movie_id) VALUES ?";
                             Movie.insertCast(
                               query,
-                              id,
-                              req.body.cast,
+                              JSON.parse(JSON.stringify(id))[0].movie_id,
+                              req.body.actor,
                               (err) => {
                                 if (err) {
                                   res.status(500).send({
