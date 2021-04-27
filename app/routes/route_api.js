@@ -90,6 +90,9 @@ module.exports = (app) => {
     );
   });
   app.get("/resources/img/cast/:img", (req, res) => {
+    console.log(
+      path.resolve(__dirname, `../../resources/img/movie/${req.params.img}`)
+    );
     res.sendFile(
       path.resolve(
         path.resolve(__dirname, `../../resources/img/movie/${req.params.img}`)
