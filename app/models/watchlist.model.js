@@ -44,6 +44,11 @@ Watchlist.deleteFromList = (watchlist, result) => {
         return;
       }
 
+      if (res.affectedRows == 0) {
+        result({ kind: "not_found" }, null);
+        return;
+      }
+
       console.log(
         `Deleted: ${watchlist.id} from ${watchlist.username}'s watchlist`
       );

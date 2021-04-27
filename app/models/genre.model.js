@@ -30,4 +30,42 @@ Genre.create = (newGenre, result) => {
   });
 };
 
+Genre.delete = (genre_id, result) => {
+  sql.query("DELETE FROM genre WHERE id = ?", genre_id, (err, res) => {
+    if (err) {
+      console.log("error: ", err);
+      result(err, null);
+      return;
+    }
+
+    if (res.affectedRows == 0) {
+      result({ kind: "not_found" }, null);
+      return;
+    }
+
+    result(null, res);
+  });
+};
+
+Genre.update = (genre, id, result) => {
+  sql.query(
+    "UPDATE genre SET genre = ?  WHERE id = ?",
+    [genre.genre, id],
+    (err, res) => {
+      if (err) {
+        console.log("error: ", err);
+        result(err, null);
+        return;
+      }
+
+      if (res.affectedRows == 0) {
+        result({ kind: "not_found" }, null);
+        return;
+      }
+
+      result(null, res);
+    }
+  );
+};
+
 module.exports = Genre;

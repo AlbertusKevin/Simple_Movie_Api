@@ -31,12 +31,16 @@ module.exports = (app) => {
   //? ======================================
   app.get("/api/genre", genre.findAll);
   app.post("/api/genre", genre.create);
+  app.delete("/api/genre/:id", genre.delete);
+  app.put("/api/genre/:id", genre.update);
 
   //? ======================================
   //! Api for Comment (done req with token)
   //? ======================================
   app.post("/api/comment/:movie_id", comment.create);
   app.get("/api/comment/:movie_id", comment.getFromMovie);
+  app.put("/api/comment/:movie_id", comment.update);
+  app.delete("/api/comment/:movie_id", comment.delete);
 
   // ? ======================================
   // ! Api for Rating (done req with token)

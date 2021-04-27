@@ -42,6 +42,11 @@ Watched.deleteFromList = (watched, result) => {
         return;
       }
 
+      if (res.affectedRows == 0) {
+        result({ kind: "not_found" }, null);
+        return;
+      }
+
       console.log(
         `Deleted: ${watched.id} from ${watched.username}'s watched list`
       );

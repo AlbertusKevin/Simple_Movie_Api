@@ -18,8 +18,18 @@ app.get("/", (req, res) => {
         "get: /api/movie/:movie_id",
         "put: /api/movie/:movie_id",
       ],
-      genre: ["get: /api/genre", "post: /api/genre"],
-      comment: ["post: /api/comment/:movie_id", "get: /api/comment/:movie_id"],
+      genre: [
+        "get: /api/genre",
+        "post: /api/genre",
+        "delete: /api/genre/:id",
+        "put: /api/genre/:id",
+      ],
+      comment: [
+        "post: /api/comment/:movie_id",
+        "get: /api/comment/:movie_id",
+        "put: /api/comment/:movie_id",
+        "delete: /api/comment/:movie_id",
+      ],
       rating: ["post: /api/rating/:movie_id", "put: /api/rating/:movie_id"],
       watched: [
         "get: /api/watched/:token",

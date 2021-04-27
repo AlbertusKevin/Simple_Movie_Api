@@ -57,6 +57,11 @@ Rating.updateRating = (rating, result) => {
         return;
       }
 
+      if (res.affectedRows == 0) {
+        result({ kind: "not_found" }, null);
+        return;
+      }
+
       sql.query(
         "SELECT AVG(stars) as avg_rating FROM rating WHERE movie_id = ?",
         rating.movie_id,

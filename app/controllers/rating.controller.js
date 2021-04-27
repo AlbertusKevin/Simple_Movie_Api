@@ -66,7 +66,7 @@ exports.create = (req, res) => {
                         ".",
                   });
                 else
-                  res.status(200).send({
+                  res.status(201).send({
                     status: "success",
                     message: "Rating has been given.",
                   });
@@ -126,22 +126,37 @@ exports.updateRating = (req, res) => {
 
           Rating.updateRating(rating, (err, data) => {
             if (err)
-              res.status(500).send({
-                message:
-                  err.message || " Some error occurred while updating rating.",
-              });
+              if (err.kind === "not_found") {
+                res.status(404).send({
+                  status: "Empty",
+                  message: `Not found rating at movie with id ${req.params.movie_id}.`,
+                });
+              } else {
+                res.status(500).send({
+                  message:
+                    err.message ||
+                    " Some error occurred while updating rating.",
+                });
+              }
             else
               Rating.updateAccRating(data, rating.movie_id, (err, data) => {
                 if (err)
-                  res.status(500).send({
-                    message:
-                      err.message ||
-                      " Rating has been updated, buat some error occurred while updating acc_rating movie with id " +
-                        rating.movie_id +
-                        ".",
-                  });
+                  if (err.kind === "not_found") {
+                    res.status(404).send({
+                      status: "Empty",
+                      message: `Not found rating at movie with id ${req.params.movie_id}.`,
+                    });
+                  } else {
+                    res.status(500).send({
+                      message:
+                        err.message ||
+                        " Rating has been updated, some error occurred while updating acc_rating movie with id " +
+                          rating.movie_id +
+                          ".",
+                    });
+                  }
                 else
-                  res.status(200).send({
+                  res.status(201).send({
                     status: "success",
                     message: "Rating has been updated.",
                   });

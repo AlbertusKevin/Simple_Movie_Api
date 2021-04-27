@@ -85,7 +85,7 @@ exports.insertCast = (req, res) => {
                   message: `${err.message}. Some problem occured when trying to insert new cast data.`,
                 });
               } else {
-                res.status(200).send({
+                res.status(201).send({
                   status: "success",
                   message: "New cast has been inserted.",
                 });
@@ -221,14 +221,19 @@ exports.updateData = (req, res) => {
 
             Cast.getCastDetail(req.params.id, (err, data) => {
               if (err) {
-                res.status(500).send({
-                  status: "error",
-                  message: `${err.message} Some error occured while trying to get old data cast by id ${req.params.id}`,
-                });
+                if (err.kind === "not_found") {
+                  res.status(404).send({
+                    status: "Empty",
+                    message: `Not found cast with id ${req.params.id}.`,
+                  });
+                } else {
+                  res.status(500).send({
+                    status: "error",
+                    message: `${err.message} Some error occured while trying to get old data cast by id ${req.params.id}`,
+                  });
+                }
               } else {
                 const cast = JSON.parse(JSON.stringify(data));
-                console.log(newCast);
-                console.log(cast);
 
                 if (newCast.name == undefined) {
                   newCast.name = cast.name;
@@ -255,12 +260,19 @@ exports.updateData = (req, res) => {
 
                 Cast.updateData(req.params.id, newCast, (err, data) => {
                   if (err) {
-                    res.status(500).send({
-                      status: "error",
-                      message: `${err.message}. Some error occured while trying to update data.`,
-                    });
+                    if (err.kind === "not_found") {
+                      res.status(404).send({
+                        status: "Empty",
+                        message: `Not found Movie with id ${req.params.movie_id}.`,
+                      });
+                    } else {
+                      res.status(500).send({
+                        status: "error",
+                        message: `${err.message}. Some error occured while trying to update data.`,
+                      });
+                    }
                   } else {
-                    res.status(200).send({
+                    res.status(201).send({
                       status: "success",
                       message: "Data successfully updated",
                       new_data: newCast,

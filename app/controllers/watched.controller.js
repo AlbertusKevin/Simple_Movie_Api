@@ -105,7 +105,7 @@ exports.addToList = (req, res) => {
                     "'s watched list ",
               });
             else
-              res.status(200).send({
+              res.status(201).send({
                 status: "Success",
                 message:
                   username +
@@ -159,15 +159,22 @@ exports.deleteFromList = (req, res) => {
 
           Watched.deleteFromList(watched, (err, data) => {
             if (err)
-              res.status(500).send({
-                message:
-                  err.message ||
-                  "Some error occurred while deleting a movie with " +
-                    req.params.movie_id +
-                    " from " +
-                    req.params.vin +
-                    "'s watched list ",
-              });
+              if (err.kind === "not_found") {
+                res.status(404).send({
+                  status: "Empty",
+                  message: `Not found Movie with id ${req.params.movie_id} on watchlist.`,
+                });
+              } else {
+                res.status(500).send({
+                  message:
+                    err.message ||
+                    "Some error occurred while deleting a movie with " +
+                      req.params.movie_id +
+                      " from " +
+                      req.params.vin +
+                      "'s watched list ",
+                });
+              }
             else
               res.status(200).send({
                 status: "Success",

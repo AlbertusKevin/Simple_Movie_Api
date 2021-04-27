@@ -112,7 +112,7 @@ exports.update = (req, res) => {
           } else {
             let img = "";
 
-            if (Object.entries(req.body).length === 0) {
+            if (Object.entries(req.body).length === 1) {
               return res.status(200).send({ message: "No data updated." });
             }
 
@@ -258,7 +258,7 @@ exports.update = (req, res) => {
                       });
                     }
                   } else {
-                    res.status(200).send({
+                    res.status(201).send({
                       status: "success",
                       message: "A Movie has been updated.",
                       movie: data,
@@ -318,6 +318,7 @@ exports.create = (req, res) => {
             // Validate request
             if (!req.body) {
               res.status(400).send({
+                status: "error",
                 message: "Content can not be empty!",
               });
             }
@@ -357,7 +358,7 @@ exports.create = (req, res) => {
                   res.status(500).send({
                     message:
                       err.message ||
-                      " Some error occurred while inserting new movie.",
+                      ". Some error occurred while inserting new movie.",
                   });
                 } else {
                   Movie.getLastInserted((err, data) => {
@@ -403,7 +404,7 @@ exports.create = (req, res) => {
                         }
                       );
 
-                      res.status(200).send({
+                      res.status(201).send({
                         status: "succes",
                         message: "New movie has been added to database",
                       });

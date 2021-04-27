@@ -55,6 +55,12 @@ Cast.updateData = (id, cast, result) => {
       result(err, null);
       return;
     }
+
+    if (res.affectedRows == 0) {
+      result({ kind: "not_found" }, null);
+      return;
+    }
+
     result(null, res);
   });
 };

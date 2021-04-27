@@ -95,3 +95,141 @@ exports.create = (req, res) => {
     }
   });
 };
+
+exports.delete = (req, res) => {
+  User.getUsername(req.body.token, (err, data) => {
+    if (err) {
+      if (err.message === "not_found")
+        return res.status(404).send({
+          message: `Not found username with specified token.`,
+        });
+      else
+        return res.status(500).send({
+          status: "Failed",
+          error: err.message || "Error retrieving token with from database",
+        });
+    } else {
+      const username = JSON.parse(
+        JSON.stringify(data)
+      )[0].username.toLowerCase();
+      if (username === "admin1") {
+        authToken.authorizeToken(username, function (err, data) {
+          if (err) {
+            if (err.message === "not_found")
+              return res.status(404).send({
+                message: `Not found User with username ${username}.`,
+              });
+            else
+              return res.status(500).send({
+                status: "Failed",
+                error:
+                  err.message || "Error retrieving token with from database",
+              });
+          } else if (!data.valid) {
+            return res.status(403).send({
+              status: "Forbidden Access",
+              message: "must login first",
+            });
+          } else {
+            Genre.delete(req.params.id, (err, data) => {
+              if (err)
+                if (err.kind === "not_found") {
+                  res.status(404).send({
+                    status: "Empty",
+                    message: `Not found genre with id ${req.params.id}.`,
+                  });
+                } else {
+                  res.status(500).send({
+                    message:
+                      err.message ||
+                      "Some error occurred while deleting the genre.",
+                  });
+                }
+              else
+                res
+                  .status(200)
+                  .send({ status: "success", message: "genre deleted" });
+            });
+          }
+        });
+      } else {
+        return res.status(403).send({
+          status: "Forbidden Access",
+          message: "Only admin can delete!",
+        });
+      }
+    }
+  });
+};
+
+exports.update = (req, res) => {
+  User.getUsername(req.body.token, (err, data) => {
+    if (err) {
+      if (err.message === "not_found")
+        return res.status(404).send({
+          message: `Not found username with specified token.`,
+        });
+      else
+        return res.status(500).send({
+          status: "Failed",
+          error: err.message || "Error retrieving token with from database",
+        });
+    } else {
+      const username = JSON.parse(
+        JSON.stringify(data)
+      )[0].username.toLowerCase();
+      if (username === "admin1") {
+        authToken.authorizeToken(username, function (err, data) {
+          if (err) {
+            if (err.message === "not_found")
+              return res.status(404).send({
+                message: `Not found User with username ${username}.`,
+              });
+            else
+              return res.status(500).send({
+                status: "Failed",
+                error:
+                  err.message || "Error retrieving token with from database",
+              });
+          } else if (!data.valid) {
+            return res.status(403).send({
+              status: "Forbidden Access",
+              message: "must login first",
+            });
+          } else {
+            // Create a Genre
+            const genre = new Genre({
+              genre: req.body.genre,
+            });
+
+            Genre.update(genre, req.params.id, (err, data) => {
+              if (err)
+                if (err.kind === "not_found") {
+                  res.status(404).send({
+                    status: "Empty",
+                    message: `Not found genre with id ${req.params.id}.`,
+                  });
+                } else {
+                  res.status(500).send({
+                    status: "error",
+                    message:
+                      err.message ||
+                      "Some error occurred while updating the genre.",
+                  });
+                }
+              else
+                res
+                  .status(201)
+                  .send({ status: "success", message: "genre updated" });
+            });
+          }
+        });
+      } else {
+        return res.status(403).send({
+          status: "Forbidden Access",
+          message: "Only admin can update!",
+        });
+      }
+    }
+  });
+};
