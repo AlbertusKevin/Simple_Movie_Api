@@ -83,22 +83,25 @@ module.exports = (app) => {
   app.get("/api/areyoulogin/:username", user.checkToken);
 
   app.get("/resources/img/movie/:img", (req, res) => {
+    console.log(
+      path.resolve(
+        path.resolve(__dirname, `../../resources/img/movie/${req.params.img}`)
+      )
+    );
     res.sendFile(
       path.resolve(
-        path.resolve(
-          __dirname,
-          `../../../resources/img/movie/${req.params.img}`
-        )
+        path.resolve(__dirname, `../../resources/img/movie/${req.params.img}`)
       )
     );
   });
+
   app.get("/resources/img/cast/:img", (req, res) => {
     console.log(
-      path.resolve(__dirname, `../../../resources/img/cast/${req.params.img}`)
+      path.resolve(__dirname, `../../resources/img/cast/${req.params.img}`)
     );
     res.sendFile(
       path.resolve(
-        path.resolve(__dirname, `../../../resources/img/cast/${req.params.img}`)
+        path.resolve(__dirname, `../../resources/img/cast/${req.params.img}`)
       )
     );
   });
