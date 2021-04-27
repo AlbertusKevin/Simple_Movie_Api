@@ -1,11 +1,13 @@
 const express = require("express");
 const app = express();
 const PORT = process.env.PORT || 3000;
+const path = require("path");
 
 // parse requests of content-type: application/json
 app.use(express.json());
 // parse requests of content-type: application/x-www-form-urlencoded
 app.use(express.urlencoded({ extended: true }));
+app.use("/resources", express.static(path.join(__dirname, "resources")));
 
 // simple route
 app.get("/", (req, res) => {

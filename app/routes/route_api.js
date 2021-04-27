@@ -9,6 +9,7 @@ module.exports = (app) => {
   const watchlist = require("../controllers/watchlist.controller.js");
   const cast = require("../controllers/cast.controller.js");
   const user = require("../controllers/userController.js");
+  const path = require("path");
 
   app.use(function (req, res, next) {
     res.header(
@@ -80,4 +81,19 @@ module.exports = (app) => {
   app.post("/api/register", user.register);
   app.put("/api/user", user.updateUser);
   app.get("/api/areyoulogin/:username", user.checkToken);
+
+  app.get("/resources/img/movie/:img", (req, res) => {
+    res.sendFile(
+      path.resolve(
+        path.resolve(__dirname, `../../resources/img/movie/${req.params.img}`)
+      )
+    );
+  });
+  app.get("/resources/img/cast/:img", (req, res) => {
+    res.sendFile(
+      path.resolve(
+        path.resolve(__dirname, `../../resources/img/movie/${req.params.img}`)
+      )
+    );
+  });
 };
