@@ -195,7 +195,8 @@ exports.updateData = (req, res) => {
                   data: "No File is selected.",
                 });
               }
-
+              console.log(req.file);
+              console.log(req.file.path);
               // ambil path
               img = req.file.filename;
             }
